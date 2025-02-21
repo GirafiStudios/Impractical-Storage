@@ -70,6 +70,9 @@ public class TileControllerInterface extends TileCore {
     @Nullable
     @Override
     public <T> T getCapability(Capability<T> capability, @Nullable EnumFacing facing) {
-        return (T) getController().itemHandler;
+        if (capability == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY) {
+            return (T) getController().itemHandler;
+        }
+        return super.getCapability(capability, facing);
     }
 }
