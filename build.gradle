@@ -1,55 +1,85 @@
-buildscript {
-    repositories {
-        maven { url = 'https://maven.minecraftforge.net/' }
-        mavenCentral()
-    }
-    dependencies {
-        classpath 'net.minecraftforge.gradle:ForgeGradle:3.+'
-    }
+plugins {
+    id 'idea'
+    id 'net.minecraftforge.gradle' version '[6.0,6.2)'
 }
 
-apply plugin: 'net.minecraftforge.gradle'
+java.toolchain.languageVersion = JavaLanguageVersion.of(17)
 
-sourceCompatibility = targetCompatibility = compileJava.sourceCompatibility = compileJava.targetCompatibility = '1.8'
+repositories {
+  maven {
+    name = "Jared's maven"
+    url = "https://maven.blamejared.com/"
+  }
+  flatDir { dirs 'deps' }
+}
 
-version = project.mod_version
-group= 'me.dmillerw.impstorage'
-archivesBaseName = 'ImpraticalStorage'
+version = "${minecraft_version}-${mod_version}"
+group= 'com.girafi.impstorage'
+
+base {
+    archivesName = "ImpracticalStorage"
+}
 
 minecraft {
-    mappings channel: 'snapshot', version: '20171003-1.12'
+    mappings channel: 'official', version: project.minecraft_version
+	accessTransformer = file('src/main/resources/META-INF/accesstransformer.cfg')
+	enableIdeaPrepareRuns = true
+	copyIdeResources = true
+	generateRunFolders = true
 	
     runs {
         client {
             workingDirectory project.file('run')
-            property 'forge.logging.console.level', 'debug'
+			
+            mods {
+                "${mod_id}" {
+                    source sourceSets.main
+                }
+            }
         }
-
         server {
-            property 'forge.logging.console.level', 'debug'
+            workingDirectory project.file('run')
+
+            mods {
+                "${mod_id}" {
+                    source sourceSets.main
+                }
+            }
+        }
+        data {
+            workingDirectory project.file('run')
+            args '--mod', '${mod_id}', '--all', '--output', file("src/generated/resources/"), '--existing', file("src/main/resources/")
+            mods {
+                "${mod_id}" {
+                    source sourceSets.main
+                }
+            }
         }
     }
 }
-
-version = "${mod_version}-MC${minecraft_version}"
 
 dependencies {
-    minecraft 'net.minecraftforge:forge:1.12.2-14.23.5.2859'
+    minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
+    runtimeOnly fg.deobf("mezz.jei:jei-${minecraft_version}-forge:${jei_version}")
 }
 
-jar {
-    manifest {
-        attributes([
-            "Implementation-Title": "Impratical Storage",
-            "Implementation-Version": "https://raw.githubusercontent.com/dmillerw/Impractical-Storage/" + project.version_json
-        ])
+def resourceTargets = ['META-INF/mods.toml']
+def replaceProperties = [
+        minecraft_version: minecraft_version, minecraft_version_range: minecraft_version_range,
+        forge_version: forge_version, forge_version_range: forge_version_range,
+        loader_version_range: loader_version_range,
+        mod_version: mod_version,
+]
+
+processResources {
+    inputs.properties replaceProperties
+    replaceProperties.put 'project', project
+
+    filesMatching(resourceTargets) {
+        expand replaceProperties
     }
 }
 
-jar.finalizedBy('reobfJar') 
-
-sourceSets {
-    main {
-        output.resourcesDir = output.classesDir
-    }
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
 }

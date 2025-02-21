@@ -1,6 +1,8 @@
 {
     "pack": {
-        "description": "Impratical Storage resources",
-        "pack_format": 3
+        "description": "Impractical Storage resources",
+    "pack_format": 15,
+    "forge:resource_pack_format": 12,
+    "forge:data_pack_format": 10
     }
 }

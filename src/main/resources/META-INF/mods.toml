@@ -1,0 +1,22 @@
+modLoader="javafml"
+loaderVersion="${loader_version_range}"
+license="All Rights Reserved"
+
+[[mods]]
+    modId="aquaculture"
+    version="${mod_version}"
+    displayName="Impractical Storage"
+    displayURL="https://legacy.curseforge.com/minecraft/mc-mods/impractical-storage"
+    issueTrackerURL="https://github.com/GirafiStudios/Impractical-Storage/issues"
+    authors="Girafi, dmillerw"
+    credits=""
+    description='''
+    Because really, who can fit 1728 gold blocks in a chest!?
+    '''
+
+[[dependencies.aquaculture]]
+    modId="forge"
+    mandatory=true
+    versionRange="${forge_version_range}"
+    ordering="AFTER"
+    side="BOTH"

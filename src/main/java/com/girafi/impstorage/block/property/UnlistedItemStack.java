@@ -1,0 +1,20 @@
+package com.girafi.impstorage.block.property;
+
+import net.minecraft.item.ItemStack;
+
+public class UnlistedItemStack extends UnlistedProperty<ItemStack> {
+
+    public UnlistedItemStack(String name) {
+        super(name, ItemStack.class);
+    }
+
+    @Override
+    public boolean isValid(ItemStack value) {
+        return true;
+    }
+
+    @Override
+    public String valueToString(ItemStack value) {
+        return value.toString();
+    }
+}
