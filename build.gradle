@@ -1,66 +1,55 @@
 buildscript {
     repositories {
-        jcenter()
-        maven { url = "http://files.minecraftforge.net/maven" }
+        maven { url = 'https://maven.minecraftforge.net/' }
+        mavenCentral()
     }
     dependencies {
-        classpath 'net.minecraftforge.gradle:ForgeGradle:2.3-SNAPSHOT'
+        classpath 'net.minecraftforge.gradle:ForgeGradle:3.+'
     }
 }
 
-apply plugin: 'net.minecraftforge.gradle.forge'
+apply plugin: 'net.minecraftforge.gradle'
 
-ext.configFile = file "build.properties"
+sourceCompatibility = targetCompatibility = compileJava.sourceCompatibility = compileJava.targetCompatibility = '1.8'
 
-configFile.withReader {
-    def prop = new Properties()
-    prop.load(it)
-    project.ext.config = new ConfigSlurper().parse prop
-}
-
-version = config.mod_version
-group= config.mod_base_package // http://maven.apache.org/guides/mini/guide-naming-conventions.html
-archivesBaseName = config.mod_name
-
-sourceCompatibility = targetCompatibility = "1.8" // Need this here so eclipse task generates correctly.
-compileJava {
-    sourceCompatibility = targetCompatibility = "1.8"
-}
+version = project.mod_version
+group= 'me.dmillerw.impstorage'
+archivesBaseName = 'impstorage'
 
 minecraft {
-    runDir = "run"
-    version = config.minecraft_version + "-" + config.forge_version
-    mappings = config.mcp_mappings
-    useDepAts = true
+    mappings channel: 'snapshot', version: '20171003-1.12'
+	
+    runs {
+        client {
+            workingDirectory project.file('run')
+            property 'forge.logging.console.level', 'debug'
+        }
 
-    replace "%MOD_VERSION%", config.mod_version
-    replace "%FORGE_VERSION%", config.forge_version
-    replace "%VERSION_JSON%", "https://raw.githubusercontent.com/dmillerw/Impractical-Storage/" + config.version_json
-
-    replaceIn config.mod_info_path
+        server {
+            property 'forge.logging.console.level', 'debug'
+        }
+    }
 }
 
-version = "${config.mod_version}-MC${config.minecraft_version}"
+version = "${mod_version}-MC${minecraft_version}"
 
 dependencies {
-
+    minecraft 'net.minecraftforge:forge:1.12.2-14.23.5.2859'
 }
 
-processResources {
-    // this will ensure that this task is redone when the versions change.
-    inputs.property "version", project.version
-    inputs.property "mcversion", project.minecraft.version
-
-    // replace stuff in mcmod.info, nothing else
-    from(sourceSets.main.resources.srcDirs) {
-        include 'mcmod.info'
-
-        // replace version and mcversion
-        expand 'version':project.version, 'mcversion':project.minecraft.version
+jar {
+    manifest {
+        attributes([
+            "Implementation-Title": "Impratical Storage",
+            "Implementation-Version": "https://raw.githubusercontent.com/dmillerw/Impractical-Storage/" + project.version_json
+        ])
     }
+}
 
-    // copy everything else, thats not the mcmod.info
-    from(sourceSets.main.resources.srcDirs) {
-        exclude 'mcmod.info'
+jar.finalizedBy('reobfJar') 
+
+sourceSets {
+    main {
+        output.resourcesDir = output.classesDir
     }
 }
