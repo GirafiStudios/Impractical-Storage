@@ -17,7 +17,6 @@ import net.minecraft.util.NonNullList;
  * @author dmillerw
  */
 public class BlockCrate extends Block {
-
     public static final PropertyEnum<EnumType> VARIANT = PropertyEnum.create("variant", EnumType.class);
 
     public BlockCrate() {

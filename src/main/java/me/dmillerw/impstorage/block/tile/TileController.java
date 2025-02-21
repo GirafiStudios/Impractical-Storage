@@ -1,6 +1,7 @@
 package me.dmillerw.impstorage.block.tile;
 
 import me.dmillerw.impstorage.block.BlockController;
+import me.dmillerw.impstorage.block.BlockItemBlock;
 import me.dmillerw.impstorage.block.BlockPhantom;
 import me.dmillerw.impstorage.block.ModBlocks;
 import me.dmillerw.impstorage.lib.data.SortingType;
@@ -9,6 +10,7 @@ import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.inventory.InventoryHelper;
 import net.minecraft.inventory.ItemStackHelper;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
@@ -22,6 +24,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.util.Constants;
+import net.minecraftforge.fml.common.registry.ForgeRegistries;
 import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.ItemHandlerHelper;
@@ -409,8 +412,9 @@ public class TileController extends TileCore implements ITickable {
     @Override
     public void update() {
         if (!world.isRemote) {
-            if (origin == null || end == null)
+            if (origin == null || end == null) {
                 return;
+            }
 
             if (shouldShiftInventory) {
                 shiftInventory();
@@ -448,8 +452,9 @@ public class TileController extends TileCore implements ITickable {
                                 BlockPos pos = origin.add(x, y, z);
                                 if (world.getBlockState(pos).getBlock() == ModBlocks.controller_interface) {
                                     TileControllerInterface tile = (TileControllerInterface) getWorld().getTileEntity(pos);
-                                    if (tile != null)
+                                    if (tile != null) {
                                         tile.registerController(this);
+                                    }
                                 }
                             }
                         }
@@ -473,13 +478,12 @@ public class TileController extends TileCore implements ITickable {
 
                                     int slot = getSlotForPosition(pos);
                                     if (slot == -1) {
-                                        int i = 0;
+                                        int i;
                                         for (i = 0; i < totalSize; i++) {
                                             long world = slotToWorldMap[i];
                                             if (world == -1) {
                                                 slotToWorldMap[i] = getLongFromPosition(x, y, z);
                                                 worldToSlotMap[y][x][z] = i;
-
                                                 break;
                                             }
                                         }
@@ -655,12 +659,24 @@ public class TileController extends TileCore implements ITickable {
             ItemStack stack = getStackInSlot(i);
             if (!stack.isEmpty()) {
                 BlockPos pos = BlockPos.fromLong(slotToWorldMap[i]).add(origin);
-                setBlock(i, ItemStack.EMPTY);
+                TileEntity tileEntity = world.getTileEntity(pos);
 
-                InventoryHelper.spawnItemStack(getWorld(), pos.getX(), pos.getY(), pos.getZ(), stack);
-
+                if (CommonProxy.dropBlocks) {
+                    InventoryHelper.spawnItemStack(getWorld(), pos.getX(), pos.getY(), pos.getZ(), stack);
+                    setBlock(i, ItemStack.EMPTY);
+                } else {
+                    if (tileEntity instanceof TileItemBlock) {
+                        TileItemBlock itemBlock = (TileItemBlock) tileEntity;
+                        Item item = getStackForPosition(pos).getItem();
+                        if (item instanceof ItemBlock) {
+                            getWorld().setBlockState(pos, Block.getBlockFromItem(item).getStateFromMeta(itemBlock.item.getMetadata()), 2);
+                        } else {
+                            InventoryHelper.spawnItemStack(getWorld(), pos.getX(), pos.getY(), pos.getZ(), stack);
+                            setBlock(i, ItemStack.EMPTY);
+                        }
+                    }
+                }
             }
-
         }
 
         TileItemBlock.DROPS = true;
@@ -718,7 +734,7 @@ public class TileController extends TileCore implements ITickable {
             }
         }
 
-        if (world.getBlockState(pos).getBlock() != ModBlocks.controller) { //Disallow the controller to be moved around by itself
+        if (!inventory.isEmpty()) {
             inventory.set(slot, itemStack);
         }
 

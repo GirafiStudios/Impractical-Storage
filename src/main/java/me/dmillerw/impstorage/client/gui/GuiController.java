@@ -212,7 +212,7 @@ public class GuiController extends GuiScreen {
     }
 
     @Override
-    protected void actionPerformed(GuiButton button) throws IOException {
+    protected void actionPerformed(GuiButton button) {
         int nx = x;
         int ny = y;
         int nz = z;

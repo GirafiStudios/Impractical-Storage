@@ -68,7 +68,6 @@ public class BlockController extends Block implements ITileEntityProvider {
                 ((TileController) tile).onBlockBreak();
             }
         }
-
         super.breakBlock(worldIn, pos, state);
     }
 

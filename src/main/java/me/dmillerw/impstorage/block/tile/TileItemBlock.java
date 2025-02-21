@@ -12,9 +12,7 @@ import net.minecraftforge.common.property.IExtendedBlockState;
  * @author dmillerw
  */
 public class TileItemBlock extends TileCore {
-
     public static boolean DROPS = true;
-
     public ItemStack item = ItemStack.EMPTY;
     private BlockPos controllerPos;
 
@@ -80,7 +78,7 @@ public class TileItemBlock extends TileCore {
 
             ItemStack drop = controller.getStackInSlot(slot).copy();
             if (drop.getItem() instanceof ItemBlock) {
-                drop.setItemDamage(((ItemBlock)drop.getItem()).getMetadata(drop.getItemDamage()));
+                drop.setItemDamage(drop.getItem().getMetadata(drop.getItemDamage()));
             }
 
             controller.setInventorySlotContents(slot, ItemStack.EMPTY, false, true, false);
