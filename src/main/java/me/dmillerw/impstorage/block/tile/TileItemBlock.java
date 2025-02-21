@@ -20,8 +20,9 @@ public class TileItemBlock extends TileCore {
     public void writeToDisk(NBTTagCompound compound) {
         super.writeToDisk(compound);
 
-        if (controllerPos != null)
+        if (controllerPos != null) {
             compound.setLong("controller", controllerPos.toLong());
+        }
 
         NBTTagCompound tag = new NBTTagCompound();
         item.writeToNBT(tag);
@@ -50,9 +51,9 @@ public class TileItemBlock extends TileCore {
     }
 
     private TileController getController() {
-        if (controllerPos == null || controllerPos.equals(BlockPos.ORIGIN))
+        if (controllerPos == null || controllerPos.equals(BlockPos.ORIGIN)) {
             return null;
-
+        }
         return (TileController) world.getTileEntity(controllerPos);
     }
 
@@ -60,9 +61,6 @@ public class TileItemBlock extends TileCore {
         TileController controller = getController();
         if (controller != null) {
             this.item = force.isEmpty() ? controller.getStackForPosition(pos) : force;
-            this.markDirtyAndNotify();
-        } else {
-            this.item = ItemStack.EMPTY;
             this.markDirtyAndNotify();
         }
     }
@@ -85,7 +83,12 @@ public class TileItemBlock extends TileCore {
 
             return drop;
         } else {
-            return ItemStack.EMPTY;
+            ItemStack drop = item;
+            if (drop.getItem() instanceof ItemBlock) {
+                drop.setItemDamage(drop.getItem().getMetadata(drop.getItemDamage()));
+            }
+
+            return drop;
         }
     }
 

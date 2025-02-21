@@ -63,10 +63,11 @@ public class BlockItemBlock extends Block implements ITileEntityProvider {
     public void breakBlock(World worldIn, BlockPos pos, IBlockState state) {
         if (!worldIn.isRemote) {
             TileEntity tile = worldIn.getTileEntity(pos);
-            if (tile != null && tile instanceof TileItemBlock)
+            if (tile != null && tile instanceof TileItemBlock) {
                 ((TileItemBlock) tile).getDrop();
         }
     }
+}
 
     @Override
     public ItemStack getPickBlock(IBlockState state, RayTraceResult target, World world, BlockPos pos, EntityPlayer player) {
@@ -83,15 +84,13 @@ public class BlockItemBlock extends Block implements ITileEntityProvider {
         if (!worldIn.isRemote) {
             if (playerIn.isSneaking()) {
                 TileEntity tile = worldIn.getTileEntity(pos);
-                if (tile != null) {
+                if (tile instanceof TileItemBlock) {
                     ItemStack drop = ((TileItemBlock)tile).getDrop();
                     if (!drop.isEmpty()) {
                         InventoryHelper.spawnItemStack(worldIn, pos.getX(), pos.getY(), pos.getZ(), drop);
                     }
-
                     worldIn.setBlockToAir(pos);
                 }
-
                 return true;
             } else {
                 return false;
@@ -124,9 +123,9 @@ public class BlockItemBlock extends Block implements ITileEntityProvider {
     @Override
     public IBlockState getExtendedState(IBlockState state, IBlockAccess world, BlockPos pos) {
         TileEntity tile = world.getTileEntity(pos);
-        if (tile != null && tile instanceof TileItemBlock)
+        if (tile != null && tile instanceof TileItemBlock) {
             return ((TileItemBlock) tile).getExtendedBlockState(state);
-
+        }
         return super.getExtendedState(state, world, pos);
     }
 
