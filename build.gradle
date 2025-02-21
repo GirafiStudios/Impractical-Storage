@@ -14,7 +14,7 @@ sourceCompatibility = targetCompatibility = compileJava.sourceCompatibility = co
 
 version = project.mod_version
 group= 'me.dmillerw.impstorage'
-archivesBaseName = 'impstorage'
+archivesBaseName = 'ImpraticalStorage'
 
 minecraft {
     mappings channel: 'snapshot', version: '20171003-1.12'
