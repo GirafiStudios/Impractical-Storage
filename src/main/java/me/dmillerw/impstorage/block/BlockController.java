@@ -33,7 +33,7 @@ public class BlockController extends Block implements ITileEntityProvider {
     public static final PropertyDirection FACING = BlockHorizontal.FACING;
 
     public BlockController() {
-        super(Material.IRON);
+        super(Material.ANVIL);
 
         setDefaultState(blockState.getBaseState().withProperty(FACING, EnumFacing.NORTH));
 

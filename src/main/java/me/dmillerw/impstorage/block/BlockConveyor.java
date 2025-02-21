@@ -29,7 +29,7 @@ public class BlockConveyor extends Block implements ITileEntityProvider {
     public static final PropertyDirection FACING = BlockHorizontal.FACING;
 
     public BlockConveyor() {
-        super(Material.IRON);
+        super(Material.ANVIL);
 
         setHardness(2F);
         setResistance(2F);

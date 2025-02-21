@@ -718,7 +718,9 @@ public class TileController extends TileCore implements ITickable {
             }
         }
 
-        inventory.set(slot, itemStack);
+        if (world.getBlockState(pos).getBlock() != ModBlocks.controller) { //Disallow the controller to be moved around by itself
+            inventory.set(slot, itemStack);
+        }
 
         if (shouldShift) {
             if (itemStack.isEmpty()) {

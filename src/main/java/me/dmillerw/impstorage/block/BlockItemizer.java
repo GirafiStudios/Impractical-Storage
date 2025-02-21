@@ -26,7 +26,7 @@ public class BlockItemizer extends Block {
     public static final PropertyDirection FACING = BlockDirectional.FACING;
 
     public BlockItemizer() {
-        super(Material.IRON);
+        super(Material.ANVIL);
 
         setHardness(2F);
         setResistance(2F);

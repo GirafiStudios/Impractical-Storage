@@ -22,7 +22,7 @@ public class BlockControllerInterface extends Block implements ITileEntityProvid
     public static final PropertyEnum<InterfaceState> STATE = PropertyEnum.create("state", InterfaceState.class);
 
     public BlockControllerInterface() {
-        super(Material.IRON);
+        super(Material.ANVIL);
 
         setDefaultState(blockState.getBaseState().withProperty(STATE, InterfaceState.INACTIVE));
 
