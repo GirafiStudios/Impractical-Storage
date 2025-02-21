@@ -38,7 +38,6 @@ import java.util.Random;
  * @author dmillerw
  */
 public class TileController extends TileCore implements ITickable {
-
     private static final int NUM_X_BITS = 1 + MathHelper.log2(MathHelper.smallestEncompassingPowerOfTwo(30000000));
     private static final int NUM_Z_BITS = NUM_X_BITS;
     private static final int NUM_Y_BITS = 64 - NUM_X_BITS - NUM_Z_BITS;
@@ -64,7 +63,6 @@ public class TileController extends TileCore implements ITickable {
     public static boolean INVENTORY_BLOCK = false;
 
     public static class ItemHandler implements IItemHandler {
-
         private TileController controller;
 
         private ItemHandler(TileController controller) {
@@ -187,12 +185,11 @@ public class TileController extends TileCore implements ITickable {
     }
 
     private static class QueueElement {
-
         public int slot;
         public ItemStack itemStack;
     }
 
-    private Random random = new Random();
+    private final Random random = new Random();
 
     public ItemHandler itemHandler = new ItemHandler(this);
     public NonNullList<ItemStack> inventory = NonNullList.create();
@@ -253,8 +250,8 @@ public class TileController extends TileCore implements ITickable {
             compound.setBoolean("shouldShiftInventory", shouldShiftInventory);
 
             NBTTagList nbt_slotToWorldMap = new NBTTagList();
-            for (int i = 0; i < slotToWorldMap.length; i++) {
-                nbt_slotToWorldMap.appendTag(new NBTTagLong(slotToWorldMap[i]));
+            for (long l : slotToWorldMap) {
+                nbt_slotToWorldMap.appendTag(new NBTTagLong(l));
             }
             compound.setTag("slotToWorldMap", nbt_slotToWorldMap);
 
@@ -570,8 +567,9 @@ public class TileController extends TileCore implements ITickable {
                     for (int x = 0; x < xLength; x++) {
                         BlockPos pos = oldOrigin.add(x, y, z);
                         IBlockState state = world.getBlockState(pos);
-                        if (state.getBlock() == ModBlocks.item_block)
+                        if (state.getBlock() == ModBlocks.item_block) {
                             world.setBlockToAir(pos);
+                        }
                     }
                 }
             }
@@ -670,7 +668,7 @@ public class TileController extends TileCore implements ITickable {
                         Item item = getStackForPosition(pos).getItem();
                         if (item instanceof ItemBlock) {
                             getWorld().setBlockState(pos, Block.getBlockFromItem(item).getStateFromMeta(itemBlock.item.getMetadata()), 2);
-                        } else {
+                        } else { //TODO Maybe make items stay in crates?
                             InventoryHelper.spawnItemStack(getWorld(), pos.getX(), pos.getY(), pos.getZ(), stack);
                             setBlock(i, ItemStack.EMPTY);
                         }
@@ -762,8 +760,7 @@ public class TileController extends TileCore implements ITickable {
         NonNullList<ItemStack> shifted = NonNullList.withSize(totalSize, ItemStack.EMPTY);
 
         int target = 0;
-        for (int i = 0; i < inventory.size(); i++) {
-            ItemStack stack = inventory.get(i);
+        for (ItemStack stack : inventory) {
             if (!stack.isEmpty()) {
                 shifted.set(target, stack.copy());
                 target++;

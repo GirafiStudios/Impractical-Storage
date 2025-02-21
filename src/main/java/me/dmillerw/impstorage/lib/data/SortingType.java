@@ -7,7 +7,7 @@ public enum SortingType {
 
     ROWS("rows", PositionHandler.BAKED, PositionHandler.ROW_HANDLER, SizeCalculator.DEFAULT),
     COLUMNS("columns", PositionHandler.BAKED, PositionHandler.COLUMN_HANDLER, SizeCalculator.DEFAULT),
-    PYRAMID("pyramid", PositionHandler.BAKED, PositionHandler.PYRAMID_HANDLER, SizeCalculator.PYRAMID),
+    //PYRAMID("pyramid", PositionHandler.BAKED, PositionHandler.PYRAMID_HANDLER, SizeCalculator.PYRAMID),
     MESSY("messy", PositionHandler.RUNTIME, PositionHandler.MESSY_HANDLER, SizeCalculator.DEFAULT);
 
     private final String name;

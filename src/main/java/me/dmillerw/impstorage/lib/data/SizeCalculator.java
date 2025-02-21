@@ -33,14 +33,14 @@ public abstract class SizeCalculator {
         }
     };
 
-    public static final SizeCalculator PYRAMID = new SizeCalculator() {
+    /*public static final SizeCalculator PYRAMID = new SizeCalculator() { //TODO Reimplement
 
         @Override
         public void calculate(TileController tile) {
             int size = 0;
             int occludedSpots = 0;
             for (int y = 0; y < tile.height; y++) {
-                for (int x = y; x < tile.xLength - y; x++) {
+                for (int x = 0; x < tile.xLength - y; x++) {
                     for (int z = y; z < tile.zLength - y; z++) {
                         if (SizeCalculator.isBlockOccluded(tile, x, y, z)) {
                             tile.worldOcclusionMap[y][x][z] = true;
@@ -54,9 +54,8 @@ public abstract class SizeCalculator {
 
             tile.totalSize = size;
         }
-    };
+    };*/
 
     public void calculate(TileController tile) {
-
     }
 }

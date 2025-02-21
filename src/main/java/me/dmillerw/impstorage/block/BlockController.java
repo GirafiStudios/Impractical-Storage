@@ -50,8 +50,9 @@ public class BlockController extends Block implements ITileEntityProvider {
         worldIn.setBlockState(pos, state.withProperty(FACING, facing), 2);
 
         TileEntity tile = worldIn.getTileEntity(pos);
-        if (tile != null && tile instanceof TileController)
+        if (tile instanceof TileController) {
             ((TileController) tile).initialize(facing);
+        }
     }
 
     @Override
@@ -79,7 +80,7 @@ public class BlockController extends Block implements ITileEntityProvider {
     @Override
     public int getComparatorInputOverride(IBlockState blockState, World worldIn, BlockPos pos) {
         TileEntity tile = worldIn.getTileEntity(pos);
-        if (tile != null && tile instanceof TileController) {
+        if (tile instanceof TileController) {
             return ((TileController) tile).getRedstoneLevel();
         } else {
             return 0;
@@ -120,6 +121,6 @@ public class BlockController extends Block implements ITileEntityProvider {
 
     @Override
     protected BlockStateContainer createBlockState() {
-        return new BlockStateContainer(this, new IProperty[]{FACING});
+        return new BlockStateContainer(this, FACING);
     }
 }
