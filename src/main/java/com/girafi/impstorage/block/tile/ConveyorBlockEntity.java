@@ -1,10 +1,12 @@
 package com.girafi.impstorage.block.tile;
 
-import com.girafi.impstorage.block.BlockConveyor;
+import com.girafi.impstorage.block.ConveyorBlock;
 import com.girafi.impstorage.init.ModBlockEntities;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtUtils;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -12,39 +14,39 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 
-public class TileConveyor extends TileCore {
+public class ConveyorBlockEntity extends BlockEntityCore {
     public float progress = 0.0F;
     public float previousProgress = 0.0F;
     public BlockState conveyorState = null;
 
-    public TileConveyor(BlockPos pos, BlockState state) {
+    public ConveyorBlockEntity(BlockPos pos, BlockState state) {
         super(ModBlockEntities.CONVEYOR.get(), pos, state);
     }
 
     private Direction getFacing() {
-        return level.getBlockState(getBlockPos()).getValue(BlockConveyor.FACING).getOpposite();
+        return level.getBlockState(getBlockPos()).getValue(ConveyorBlock.FACING).getOpposite();
     }
 
     @OnlyIn(Dist.CLIENT)
     public float getOffsetX(float ticks) {
-        return (float) this.getFacing().getOpposite().getFrontOffsetX() * getProgress(ticks);
+        return (float) this.getFacing().getStepX() * getProgress(ticks);
     }
 
     @OnlyIn(Dist.CLIENT)
     public float getOffsetY(float ticks) {
-        return (float) this.getFacing().getOpposite().getFrontOffsetY() * getProgress(ticks);
+        return (float) this.getFacing().getStepY() * getProgress(ticks);
     }
 
     @OnlyIn(Dist.CLIENT)
     public float getOffsetZ(float ticks) {
-        return (float) this.getFacing().getOpposite().getFrontOffsetZ() * getProgress(ticks);
+        return (float) this.getFacing().getStepZ() * getProgress(ticks);
     }
 
     private float getProgress(float ticks) {
         return -(previousProgress + (progress - previousProgress) * ticks);
     }
 
-    public static void serverTick(Level level, BlockPos pos, BlockState state, TileConveyor conveyor) {
+    public static void serverTick(Level level, BlockPos pos, BlockState state, ConveyorBlockEntity conveyor) {
         final float STEP = 0.1F;
 
         conveyor.previousProgress = conveyor.progress;
@@ -71,9 +73,9 @@ public class TileConveyor extends TileCore {
                     if (level.getBlockState(inFront.above()).isAir()) {
                         BlockEntity blockEntity = level.getBlockEntity(inFront);
 
-                        if (blockEntity instanceof TileConveyor) {
+                        if (blockEntity instanceof ConveyorBlockEntity) {
                             // and the conveyor isn't currently working on anything, we can begin
-                            if (((TileConveyor) blockEntity).conveyorState == null) {
+                            if (((ConveyorBlockEntity) blockEntity).conveyorState == null) {
                                 conveyor.conveyorState = level.getBlockState(pos.above());
                             }
                         } else {
@@ -98,24 +100,23 @@ public class TileConveyor extends TileCore {
     }
 
     @Override
-    public void writeToDisk(CompoundTag compound) {
+    public void writeToDisk(CompoundTag tag) {
         if (conveyorState != null) {
-            compound.putInt("stateId", Block.getIdFromBlock(conveyorState.getBlock()));
-            compound.putInt("stateMeta", conveyorState.getBlock().getMetaFromState(conveyorState));
+            tag.put("state", NbtUtils.writeBlockState(this.conveyorState));
         }
 
-        compound.putFloat("previousProgress", previousProgress);
+        tag.putFloat("previousProgress", this.previousProgress);
     }
 
     @Override
-    public void readFromDisk(CompoundTag compound) {
-        if (compound.contains("stateId") && compound.contains("stateMeta")) {
-            this.conveyorState = Block.getBlockById(compound.getInt("stateId")).getStateFromMeta(compound.getInt("stateMeta"));
+    public void readFromDisk(CompoundTag tag) {
+        if (tag.contains("state") && this.level != null) {
+            this.conveyorState = NbtUtils.readBlockState(this.level.holderLookup(Registries.BLOCK), tag.getCompound("state"));
         } else {
             this.conveyorState = null;
         }
 
-        previousProgress = compound.getFloat("previousProgress");
-        progress = previousProgress;
+        this.previousProgress = tag.getFloat("previousProgress");
+        this.progress = previousProgress;
     }
 }

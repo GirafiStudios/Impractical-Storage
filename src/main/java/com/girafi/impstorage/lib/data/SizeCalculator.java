@@ -1,19 +1,19 @@
 package com.girafi.impstorage.lib.data;
 
-import com.girafi.impstorage.block.tile.TileController;
+import com.girafi.impstorage.block.tile.ControllerBlockEntity;
 import com.girafi.impstorage.init.ModBlocks;
 import net.minecraft.core.BlockPos;
 
 public abstract class SizeCalculator {
 
-    private static final boolean isBlockOccluded(TileController tile, int x, int y, int z) {
+    private static final boolean isBlockOccluded(ControllerBlockEntity tile, int x, int y, int z) {
         return tile.worldOcclusionMap[y][x][z] || (!tile.getLevel().getBlockState(tile.origin.add(x, y, z)).isAir() && tile.getLevel().getBlockState(new BlockPos(x, y, z)).getBlock() != ModBlocks.ITEM_BLOCK.get());
     }
 
     public static final SizeCalculator DEFAULT = new SizeCalculator() {
 
         @Override
-        public void calculate(TileController tile) {
+        public void calculate(ControllerBlockEntity tile) {
             int occludedSpots = 0;
             for (int y = 0; y < tile.height; y++) {
                 for (int z = 0; z < tile.zLength; z++) {
@@ -53,6 +53,6 @@ public abstract class SizeCalculator {
         }
     };*/
 
-    public void calculate(TileController tile) {
+    public void calculate(ControllerBlockEntity tile) {
     }
 }

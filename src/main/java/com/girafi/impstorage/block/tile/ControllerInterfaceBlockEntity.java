@@ -1,6 +1,6 @@
 package com.girafi.impstorage.block.tile;
 
-import com.girafi.impstorage.block.BlockControllerInterface;
+import com.girafi.impstorage.block.ControllerInterfaceBlock;
 import com.girafi.impstorage.init.ModBlockEntities;
 import com.girafi.impstorage.init.ModBlocks;
 import net.minecraft.core.BlockPos;
@@ -11,54 +11,56 @@ import net.minecraftforge.common.capabilities.Capability;
 
 import javax.annotation.Nullable;
 
-public class TileControllerInterface extends TileCore {
+public class ControllerInterfaceBlockEntity extends BlockEntityCore {
     public BlockPos selectedController;
 
-    public TileControllerInterface(BlockPos pos, BlockState state) {
+    public ControllerInterfaceBlockEntity(BlockPos pos, BlockState state) {
         super(ModBlockEntities.CONTROLLER_INTERFACE.get(), pos, state);
     }
 
-    public void registerController(TileController tile) {
+    public void registerController(ControllerBlockEntity tile) {
         if (selectedController == null) {
             selectedController = tile.getBlockPos();
-            setState(BlockControllerInterface.InterfaceState.ACTIVE);
+            setState(ControllerInterfaceBlock.InterfaceState.ACTIVE);
         } else {
             if (selectedController != tile.getBlockPos()) {
-                setState(BlockControllerInterface.InterfaceState.ERROR);
+                setState(ControllerInterfaceBlock.InterfaceState.ERROR);
             }
         }
     }
 
-    private void setState(BlockControllerInterface.InterfaceState state) {
-        level.setBlock(getBlockPos(), ModBlocks.CONTROLLER_INTERFACE.get().defaultBlockState().setValue(BlockControllerInterface.STATE, state), 2);
+    private void setState(ControllerInterfaceBlock.InterfaceState state) {
+        if (this.level != null) {
+            level.setBlock(getBlockPos(), ModBlocks.CONTROLLER_INTERFACE.get().defaultBlockState().setValue(ControllerInterfaceBlock.STATE, state), 2);
+        }
     }
 
-    private TileController getController() {
-        if (selectedController == null || selectedController == BlockPos.ZERO)
+    private ControllerBlockEntity getController() {
+        if (selectedController == null || selectedController == BlockPos.ZERO || this.level == null) return null;
+
+        if (this.level.getBlockState(getBlockPos()).getValue(ControllerInterfaceBlock.STATE) == ControllerInterfaceBlock.InterfaceState.ERROR)
             return null;
 
-        if (level.getBlockState(getBlockPos()).getValue(BlockControllerInterface.STATE) == BlockControllerInterface.InterfaceState.ERROR)
-            return null;
+        BlockEntity blockEntity = this.level.getBlockEntity(selectedController);
+        if (!(blockEntity instanceof ControllerBlockEntity)) return null;
 
-        BlockEntity blockEntity = level.getBlockEntity(selectedController);
-        if (blockEntity == null || !(blockEntity instanceof TileController))
-            return null;
-
-        return (TileController) blockEntity;
+        return (ControllerBlockEntity) blockEntity;
     }
 
     @Override
     public void writeToDisk(CompoundTag compound) {
-        if (selectedController != null)
-            compound.putLong("selected", selectedController.toLong());
+        if (selectedController != null) {
+            compound.putLong("selected", selectedController.asLong());
+        }
     }
 
     @Override
     public void readFromDisk(CompoundTag compound) {
-        if (compound.contains("selected"))
-            selectedController = BlockPos.fromLong(compound.getLong("selected"));
-        else
+        if (compound.contains("selected")) {
+            selectedController = BlockPos.of(compound.getLong("selected"));
+        } else {
             selectedController = null;
+        }
     }
 
     @Override

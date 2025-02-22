@@ -1,6 +1,6 @@
 package com.girafi.impstorage.lib.data;
 
-import com.girafi.impstorage.block.tile.TileController;
+import com.girafi.impstorage.block.tile.ControllerBlockEntity;
 import net.minecraft.core.BlockPos;
 
 public abstract class PositionHandler {
@@ -10,13 +10,13 @@ public abstract class PositionHandler {
     public static final PositionHandler ROW_HANDLER = new PositionHandler() {
 
         @Override
-        public void bake(TileController tile) {
+        public void bake(ControllerBlockEntity tile) {
             int slot = 0;
             for (int y = 0; y < tile.height; y++) {
                 for (int z = 0; z < tile.zLength; z++) {
                     for (int x = 0; x < tile.xLength; x++) {
                         if (!tile.worldOcclusionMap[y][x][z]) {
-                            tile.slotToWorldMap[slot] = TileController.getLongFromPosition(x, y, z);
+                            tile.slotToWorldMap[slot] = ControllerBlockEntity.getLongFromPosition(x, y, z);
                             tile.worldToSlotMap[y][x][z] = slot;
 
                             slot++;
@@ -30,13 +30,13 @@ public abstract class PositionHandler {
     public static final PositionHandler COLUMN_HANDLER = new PositionHandler() {
 
         @Override
-        public void bake(TileController tile) {
+        public void bake(ControllerBlockEntity tile) {
             int slot = 0;
             for (int x = 0; x < tile.xLength; x++) {
                 for (int z = 0; z < tile.zLength; z++) {
                     for (int y = 0; y < tile.height; y++) {
                         if (!tile.worldOcclusionMap[y][x][z]) {
-                            tile.slotToWorldMap[slot] = TileController.getLongFromPosition(x, y, z);
+                            tile.slotToWorldMap[slot] = ControllerBlockEntity.getLongFromPosition(x, y, z);
                             tile.worldToSlotMap[y][x][z] = slot;
 
                             slot++;
@@ -69,7 +69,7 @@ public abstract class PositionHandler {
     public static final PositionHandler MESSY_HANDLER = new PositionHandler() {
 
         @Override
-        public void runtime(TileController tile, int slot) {
+        public void runtime(ControllerBlockEntity tile, int slot) {
             long longPos = tile.slotToWorldMap[slot];
             if (longPos == -1) {
                 BlockPos pos = tile.getNextRandomPosition();
@@ -79,9 +79,9 @@ public abstract class PositionHandler {
         }
     };
 
-    public void bake(TileController tile) {
+    public void bake(ControllerBlockEntity tile) {
     }
 
-    public void runtime(TileController tile, int slot) {
+    public void runtime(ControllerBlockEntity tile, int slot) {
     }
 }

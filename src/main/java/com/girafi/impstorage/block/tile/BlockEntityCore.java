@@ -13,9 +13,9 @@ import org.jetbrains.annotations.Nullable;
 
 import javax.annotation.Nonnull;
 
-public class TileCore extends BlockEntity {
+public class BlockEntityCore extends BlockEntity {
 
-    public TileCore(BlockEntityType<?> blockEntityType, BlockPos pos, BlockState state) {
+    public BlockEntityCore(BlockEntityType<?> blockEntityType, BlockPos pos, BlockState state) {
         super(blockEntityType, pos, state);
     }
 

@@ -1,6 +1,6 @@
 package com.girafi.impstorage.client.model;
 
-import com.girafi.impstorage.block.BlockItemBlock;
+import com.girafi.impstorage.block.ItemBlockBlock;
 import com.girafi.impstorage.core.BlockOverrides;
 import com.girafi.impstorage.init.ModBlocks;
 import com.google.common.collect.Lists;
@@ -8,9 +8,7 @@ import com.google.common.collect.Sets;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.block.model.BakedQuad;
-import net.minecraft.client.renderer.block.model.BlockFaceUV;
-import net.minecraft.client.renderer.block.model.FaceBakery;
+import net.minecraft.client.renderer.block.model.*;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderDispatcher;
 import net.minecraft.client.renderer.entity.ItemRenderer;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
@@ -26,6 +24,7 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.client.model.IDynamicBakedModel;
 import net.minecraftforge.client.model.data.ModelData;
+import net.minecraftforge.registries.ForgeRegistries;
 import org.jetbrains.annotations.NotNull;
 import org.joml.Vector3f;
 
@@ -47,10 +46,9 @@ public class ItemBlockBakedModel implements IDynamicBakedModel {
         return Minecraft.getInstance().getItemRenderer();
     }
 
-    private Set<String> renderBlacklist = Sets.newHashSet();
-
-    private VertexFormat format;
-    private TextureAtlasSprite wood;
+    private final Set<String> renderBlacklist = Sets.newHashSet();
+    private final VertexFormat format;
+    private final TextureAtlasSprite wood;
 
     public ItemBlockBakedModel(VertexFormat format, Function<ResourceLocation, TextureAtlasSprite> bakedTextureGetter) {
         this.format = format;
@@ -59,11 +57,12 @@ public class ItemBlockBakedModel implements IDynamicBakedModel {
 
     @OnlyIn(Dist.CLIENT)
     @Override
-    public List<BakedQuad> getQuads(@Nullable BlockState state, @Nullable Direction side, @NotNull RandomSource rand, @NotNull ModelData extraData, @org.jetbrains.annotations.Nullable RenderType renderType) {
+    @Nonnull
+    public List<BakedQuad> getQuads(BlockState state, @Nullable Direction direction, @NotNull RandomSource rand, @NotNull ModelData extraData, @Nullable RenderType renderType) {
         boolean error = false;
         List<BakedQuad> quads = Lists.newArrayList();
 
-        ItemStack stack = state.getValue(BlockItemBlock.ITEM);
+        /*ItemStack stack = state.getValue(ItemBlockBlock.ITEM); //TODO. Need the mod to be able to run, to play around with this. No obvious way to get the stack from the block. Maybe Block#getAppearance or handleItemState might be useful
 
         if (stack == null || stack.isEmpty() || stack.getItem() == null) {
             error = true;
@@ -71,41 +70,41 @@ public class ItemBlockBakedModel implements IDynamicBakedModel {
 
         if (!error) {
             try {
-                quads = safeGetQuads(state, side, rand);
+                quads = safeGetQuads(state, direction, rand);
             } catch (Exception ex) {
-                renderBlacklist.add(state.getValue(BlockItemBlock.ITEM).getItem().getRegistryName().toString());
+                renderBlacklist.add(state.getValue(ItemBlockBlock.ITEM).getItem().getRegistryName().toString());
                 error = true;
             }
         }
 
         if (error) {
             BlockState s = ModBlocks.WOOD_CRATE.get().defaultBlockState();
-            quads = rendererDispatcher().getModelForState(s).getQuads(s, side, rand);
-        }
+            quads = rendererDispatcher().getRenderer(s).getQuads(s, direction, rand);
+        }*/
 
         return quads;
     }
 
     @OnlyIn(Dist.CLIENT)
-    private List<BakedQuad> safeGetQuads(@Nullable BlockState state, @Nullable Direction side, long rand) {
-        ItemStack itemStack = state.getValue(BlockItemBlock.ITEM);
+    private List<BakedQuad> safeGetQuads(BlockState state, @Nullable Direction side, RandomSource rand) {
+        //ItemStack itemStack = state.getValue(ItemBlockBlock.ITEM); //TODO Same as above
 
         List<BakedQuad> quads = Lists.newArrayList();
 
-        Block renderBlock;
-        if (itemStack.isEmpty() || renderBlacklist.contains(itemStack.getItem().getRegistryName().toString())) {
+        /*Block renderBlock;
+        if (itemStack.isEmpty() || renderBlacklist.contains(ForgeRegistries.ITEMS.getKey(itemStack.getItem()).toString())) {
             renderBlock = ModBlocks.WOOD_CRATE.get();
         } else {
             if (BlockOverrides.shouldTreatAsItem(itemStack.getItem())) {
                 renderBlock = ModBlocks.WOOD_CRATE.get();
 
-                BakedModel model = renderItem().getItemModelMesher().getItemModel(itemStack);
-                TextureAtlasSprite texture = model.getParticleTexture();
+                BakedModel model = renderItem().getItemModelShaper().getItemModel(itemStack);
+                TextureAtlasSprite texture = model.getParticleIcon();
                 if (texture == null)
-                    texture = rendererDispatcher().getBlockModelShapes().getModelManager().getMissingModel().getParticleTexture();
+                    texture = Minecraft.getInstance().getModelManager().getMissingModel().getParticleIcon();
 
-                BlockPartFace blockPartFace = new BlockPartFace(side, 0, texture.toString(), new BlockFaceUV(new float[]{0, 0, 16, 16}, 0));
-                BlockPartRotation blockPartRotation = new BlockPartRotation(new Vector3f(0, 0, 0), Direction.Axis.X, 0, false);
+                BlockElementFace blockPartFace = new BlockElementFace(side, 0, texture.toString(), new BlockFaceUV(new float[]{0, 0, 16, 16}, 0));
+                BlockElementRotation blockPartRotation = new BlockElementRotation(new Vector3f(0, 0, 0), Direction.Axis.X, 0, false);
 
                 final float shrink = 2.5F;
 
@@ -117,7 +116,7 @@ public class ItemBlockBakedModel implements IDynamicBakedModel {
                             final float minZ = side == Direction.EAST || side == Direction.WEST ? shrink : -0.005F;
                             final float maxZ = side == Direction.EAST || side == Direction.WEST ? 16 - shrink : 16.005F;
 
-                            BakedQuad itemQuad = new FaceBakery().bakeQuad(new Vector3f(minX, shrink, minZ), new Vector3f(maxX, 16 - shrink, maxZ), blockPartFace, model.getParticleTexture(), side, ModelRotation.X0_Y0, blockPartRotation, true, true);
+                            BakedQuad itemQuad = new FaceBakery().bakeQuad(new Vector3f(minX, shrink, minZ), new Vector3f(maxX, 16 - shrink, maxZ), blockPartFace, model.getParticleIcon(), side, ModelRotation.X0_Y0, blockPartRotation, true, true);
                             quads.add(itemQuad);
                         } else if (side == Direction.UP) {
                             final float minX = shrink;
@@ -125,7 +124,7 @@ public class ItemBlockBakedModel implements IDynamicBakedModel {
                             final float minZ = shrink;
                             final float maxZ = 16 - shrink;
 
-                            BakedQuad itemQuad = new FaceBakery().bakeQuad(new Vector3f(minX, 16.005F, minZ), new Vector3f(maxX, 16.005F, maxZ), blockPartFace, model.getParticleTexture(), side, ModelRotation.X0_Y0, blockPartRotation, true, true);
+                            BakedQuad itemQuad = new FaceBakery().bakeQuad(new Vector3f(minX, 16.005F, minZ), new Vector3f(maxX, 16.005F, maxZ), blockPartFace, model.getParticleIcon(), side, ModelRotation.X0_Y0, blockPartRotation, true, true);
                             quads.add(itemQuad);
                         }
                     }
@@ -136,13 +135,13 @@ public class ItemBlockBakedModel implements IDynamicBakedModel {
             }
         }
 
-        if (!renderBlock.canRenderInLayer(renderBlock.getDefaultState(), MinecraftForgeClient.getRenderLayer()))
+        if (!renderBlock.canRenderInLayer(renderBlock.defaultBlockState(), MinecraftForgeClient.getRenderLayer()))
             return quads;
 
         BlockState renderState = renderBlock.getStateFromMeta(renderMeta);
         BakedModel model = rendererDispatcher().getModelForState(renderState);
 
-        quads.addAll(model.getQuads(renderState, side, rand));
+        quads.addAll(model.getQuads(renderState, side, rand));*/
 
         return quads;
     }
@@ -171,5 +170,11 @@ public class ItemBlockBakedModel implements IDynamicBakedModel {
     @Nonnull
     public TextureAtlasSprite getParticleIcon() {
         return wood;
+    }
+
+    @Override
+    @Nonnull
+    public ItemOverrides getOverrides() {
+        return ItemOverrides.EMPTY;
     }
 }

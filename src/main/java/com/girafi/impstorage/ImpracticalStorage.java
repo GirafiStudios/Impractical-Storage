@@ -2,11 +2,11 @@ package com.girafi.impstorage;
 
 import com.girafi.impstorage.client.ClientHandler;
 import com.girafi.impstorage.core.BlockOverrides;
-import com.girafi.impstorage.init.ModMenuTypes;
-import com.girafi.impstorage.lib.ImpracticalConfig;
 import com.girafi.impstorage.init.ModBlockEntities;
 import com.girafi.impstorage.init.ModBlocks;
 import com.girafi.impstorage.init.ModItems;
+import com.girafi.impstorage.init.ModMenuTypes;
+import com.girafi.impstorage.lib.ImpracticalConfig;
 import com.girafi.impstorage.lib.ModInfo;
 import com.girafi.impstorage.network.PacketHandler;
 import net.minecraft.core.registries.Registries;

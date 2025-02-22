@@ -1,7 +1,7 @@
 package com.girafi.impstorage.network.packet;
 
-import com.girafi.impstorage.block.BlockController;
-import com.girafi.impstorage.block.tile.TileController;
+import com.girafi.impstorage.block.ControllerBlock;
+import com.girafi.impstorage.block.tile.ControllerBlockEntity;
 import com.girafi.impstorage.lib.data.SortingType;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
@@ -78,7 +78,7 @@ public class SControllerConfig {
                 Level level = ctx.get().getSender().level();
                 BlockState state = level.getBlockState(message.destination);
                 BlockEntity blockEntity = level.getBlockEntity(message.destination);
-                if (blockEntity != null && blockEntity instanceof TileController controller) {
+                if (blockEntity != null && blockEntity instanceof ControllerBlockEntity controller) {
 
                     if (message.sort) {
                         controller.setSortingType(message.sortingType);
@@ -89,7 +89,7 @@ public class SControllerConfig {
                     }
 
                     if (message.dimensions) {
-                        controller.updateRawBounds(state.getValue(BlockController.FACING), message.boundX, message.boundY, message.boundZ);
+                        controller.updateRawBounds(state.getValue(ControllerBlock.FACING), message.boundX, message.boundY, message.boundZ);
                     }
 
                     if (message.offset) {

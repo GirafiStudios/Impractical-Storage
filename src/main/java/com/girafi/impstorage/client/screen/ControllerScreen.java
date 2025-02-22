@@ -1,6 +1,6 @@
 package com.girafi.impstorage.client.screen;
 
-import com.girafi.impstorage.block.tile.TileController;
+import com.girafi.impstorage.block.tile.ControllerBlockEntity;
 import com.girafi.impstorage.client.screen.widget.ButtonArrowScreen;
 import com.girafi.impstorage.lib.ImpracticalConfig;
 import com.girafi.impstorage.lib.ModInfo;
@@ -78,9 +78,9 @@ public class ControllerScreen extends Screen {
     private GuiTextField offsetY;
     private GuiTextField offsetZ;
 
-    private TileController tile;
+    private ControllerBlockEntity tile;
 
-    public ControllerScreen(TileController tile) {
+    public ControllerScreen(ControllerBlockEntity tile) {
         super();
         this.tile = tile;
 

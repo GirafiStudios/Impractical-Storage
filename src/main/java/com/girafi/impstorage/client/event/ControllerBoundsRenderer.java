@@ -1,6 +1,6 @@
 package com.girafi.impstorage.client.event;
 
-import com.girafi.impstorage.block.tile.TileController;
+import com.girafi.impstorage.block.tile.ControllerBlockEntity;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.Entity;
@@ -63,8 +63,8 @@ public class ControllerBoundsRenderer {
         ArrayDeque<BlockPos[]> boxes = new ArrayDeque<>();
         for (int c = 0; c < 9; ++c) {
             for (BlockEntity obj : chunks[c].getBlockEntities().values()) {
-                if (obj instanceof TileController) {
-                    TileController controller = (TileController) obj;
+                if (obj instanceof ControllerBlockEntity) {
+                    ControllerBlockEntity controller = (ControllerBlockEntity) obj;
                     if (controller.isReady() && controller.showBounds) {
                         BlockPos[] pair = new BlockPos[2];
                         pair[0] = controller.origin;

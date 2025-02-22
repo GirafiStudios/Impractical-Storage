@@ -1,18 +1,15 @@
 package com.girafi.impstorage.client;
 
-import com.girafi.impstorage.block.tile.TileConveyor;
 import com.girafi.impstorage.client.event.ControllerBoundsRenderer;
-import com.girafi.impstorage.client.model.BaseModelLoader;
-import com.girafi.impstorage.client.render.tile.RenderTileConveyor;
-import net.minecraft.client.gui.screens.MenuScreens;
+import com.girafi.impstorage.client.render.blockentity.ConveyorBlockRenderer;
+import com.girafi.impstorage.init.ModBlockEntities;
+import net.minecraft.client.renderer.blockentity.BlockEntityRenderers;
 import net.minecraftforge.common.MinecraftForge;
 
 public class ClientHandler {
 
     public static void setupClient() {
-        ModelLoaderRegistry.registerLoader(new BaseModelLoader());
-
-        ClientRegistry.bindTileEntitySpecialRenderer(TileConveyor.class, new RenderTileConveyor());
+        BlockEntityRenderers.register(ModBlockEntities.CONVEYOR.get(), ConveyorBlockRenderer::new);
 
         MinecraftForge.EVENT_BUS.register(ControllerBoundsRenderer.class);
     }

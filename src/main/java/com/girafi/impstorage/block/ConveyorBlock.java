@@ -1,6 +1,6 @@
 package com.girafi.impstorage.block;
 
-import com.girafi.impstorage.block.tile.TileConveyor;
+import com.girafi.impstorage.block.tile.ConveyorBlockEntity;
 import com.girafi.impstorage.init.ModBlockEntities;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -12,6 +12,7 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import net.minecraft.world.level.material.MapColor;
 import net.minecraft.world.level.material.PushReaction;
@@ -19,10 +20,10 @@ import net.minecraft.world.level.material.PushReaction;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-public class BlockConveyor extends BaseEntityBlock {
+public class ConveyorBlock extends BaseEntityBlock {
     public static final DirectionProperty FACING = HorizontalDirectionalBlock.FACING;
 
-    public BlockConveyor() {
+    public ConveyorBlock() {
         super(Block.Properties.of().mapColor(MapColor.TERRACOTTA_WHITE).requiresCorrectToolForDrops().strength(2.0F, 2.0F).sound(SoundType.METAL).pushReaction(PushReaction.BLOCK));
 
         this.registerDefaultState(this.getStateDefinition().any().setValue(FACING, Direction.NORTH));
@@ -31,13 +32,13 @@ public class BlockConveyor extends BaseEntityBlock {
     @Override
     @Nullable
     public BlockEntity newBlockEntity(@Nonnull BlockPos pos, @Nonnull BlockState state) {
-        return new TileConveyor(pos, state);
+        return new ConveyorBlockEntity(pos, state);
     }
 
     @Override
     @Nullable
     public <T extends BlockEntity> BlockEntityTicker<T> getTicker(@Nonnull Level level, @Nonnull BlockState state, @Nonnull BlockEntityType<T> blockEntityType) {
-        return level.isClientSide() ? createTickerHelper(blockEntityType, ModBlockEntities.CONVEYOR.get(), TileConveyor::serverTick) : null;
+        return level.isClientSide() ? createTickerHelper(blockEntityType, ModBlockEntities.CONVEYOR.get(), ConveyorBlockEntity::serverTick) : null;
     }
 
     @Override
@@ -54,5 +55,10 @@ public class BlockConveyor extends BaseEntityBlock {
     @Nonnull
     public BlockState mirror(@Nonnull BlockState state, @Nonnull Mirror mirror) {
         return state.setValue(FACING, mirror.rotation().rotate(state.getValue(FACING)));
+    }
+
+    @Override
+    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> states) {
+        states.add(FACING);
     }
 }

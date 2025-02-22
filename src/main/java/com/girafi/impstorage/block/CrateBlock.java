@@ -13,15 +13,15 @@ import org.jetbrains.annotations.Nullable;
 import javax.annotation.Nonnull;
 import java.util.List;
 
-public class BlockCrate extends Block {
+public class CrateBlock extends Block {
     private final int blockStorage;
     private final int itemStorage;
 
-    public BlockCrate(int itemStorage) {
+    public CrateBlock(int itemStorage) {
         this(0, itemStorage);
     }
 
-    public BlockCrate(int blockStorage, int itemStorage) {
+    public CrateBlock(int blockStorage, int itemStorage) {
         super(Block.Properties.of().mapColor(MapColor.WOOD).instrument(NoteBlockInstrument.BASS).strength(2.0F, 2.0F).sound(SoundType.WOOD));
         this.blockStorage = blockStorage;
         this.itemStorage = itemStorage;

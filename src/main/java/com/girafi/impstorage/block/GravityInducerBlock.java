@@ -1,41 +1,40 @@
 package com.girafi.impstorage.block;
 
-import com.girafi.impstorage.lib.ModTab;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.item.ItemStack;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.item.FallingBlockEntity;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.HorizontalDirectionalBlock;
-import net.minecraft.world.level.block.Mirror;
-import net.minecraft.world.level.block.Rotation;
+import net.minecraft.world.level.block.*;
+import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.DirectionProperty;
+import net.minecraft.world.level.material.MapColor;
+import org.jetbrains.annotations.Nullable;
 
 import javax.annotation.Nonnull;
 
-public class BlockGravityInducer extends Block {
+public class GravityInducerBlock extends Block {
     public static final DirectionProperty FACING = HorizontalDirectionalBlock.FACING;
 
-    public BlockGravityInducer() {
-        super(Material.IRON);
-
-        setHardness(2F);
-        setResistance(2F);
+    public GravityInducerBlock() {
+        super(BlockBehaviour.Properties.of().mapColor(MapColor.TERRACOTTA_WHITE).requiresCorrectToolForDrops().strength(2.0F, 2.0F).sound(SoundType.METAL));
 
         this.registerDefaultState(this.getStateDefinition().any().setValue(FACING, Direction.NORTH));
     }
 
     @Override
-    public void onBlockPlacedBy(Level level, BlockPos pos, BlockState state, EntityLivingBase placer, ItemStack stack) {
-        level.setBlockState(pos, state.withProperty(FACING, Direction.getDirectionFromEntityLiving(pos, placer)), 2);
+    public BlockState getStateForPlacement(@Nonnull BlockPlaceContext context) {
+        return this.defaultBlockState().setValue(FACING, context.getHorizontalDirection());
     }
 
     @Override
-    public void onBlockAdded(Level level, BlockPos pos, BlockState state) {
+    public void setPlacedBy(@Nonnull Level level, @Nonnull BlockPos pos, @Nonnull BlockState state, @Nullable LivingEntity livingEntity, @Nonnull ItemStack stack) {
+        super.setPlacedBy(level, pos, state, livingEntity, stack);
         dropBlocks(level, pos, state);
     }
 
@@ -65,5 +64,10 @@ public class BlockGravityInducer extends Block {
     @Nonnull
     public BlockState mirror(@Nonnull BlockState state, @Nonnull Mirror mirror) {
         return state.setValue(FACING, mirror.rotation().rotate(state.getValue(FACING)));
+    }
+
+    @Override
+    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> states) {
+        states.add(FACING);
     }
 }

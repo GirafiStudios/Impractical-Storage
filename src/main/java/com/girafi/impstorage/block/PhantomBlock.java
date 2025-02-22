@@ -10,6 +10,7 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.level.material.PushReaction;
 
@@ -17,10 +18,10 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.List;
 
-public class BlockPhantom extends Block {
+public class PhantomBlock extends Block {
     public static final EnumProperty<EnumType> TYPE = EnumProperty.create("type", EnumType.class);
 
-    public BlockPhantom() {
+    public PhantomBlock() {
         super(BlockBehaviour.Properties.of().strength(-1.0F, 3600000.8F).noLootTable().noCollission().noOcclusion().isValidSpawn(ModBlocks::never).noParticlesOnBreak().pushReaction(PushReaction.BLOCK));
 
         this.registerDefaultState(this.getStateDefinition().any().setValue(TYPE, EnumType.BLOCK));
@@ -40,7 +41,12 @@ public class BlockPhantom extends Block {
         tooltip.add(Component.translatable("tooltip.phantom.type." + TYPE.getName())); //TODO Test
     }
 
-    public static enum EnumType implements StringRepresentable {
+    @Override
+    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> states) {
+        states.add(TYPE);
+    }
+
+    public enum EnumType implements StringRepresentable {
         BLOCK("block"),
         COLUMN("column");
 

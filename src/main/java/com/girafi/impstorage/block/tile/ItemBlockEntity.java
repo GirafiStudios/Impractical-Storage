@@ -6,12 +6,12 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;
 
-public class TileItemBlock extends TileCore {
+public class ItemBlockEntity extends BlockEntityCore {
     public static boolean DROPS = true;
-    public ItemStack item = ItemStack.EMPTY;
+    public ItemStack stack = ItemStack.EMPTY;
     private BlockPos controllerPos;
 
-    public TileItemBlock(BlockPos pos, BlockState state) {
+    public ItemBlockEntity(BlockPos pos, BlockState state) {
         super(ModBlockEntities.ITEM_BLOCK.get(), pos, state);
     }
 
@@ -24,7 +24,7 @@ public class TileItemBlock extends TileCore {
         }
 
         CompoundTag tag = new CompoundTag();
-        compound.put("item", item.save(tag));
+        compound.put("stack", stack.save(tag));
     }
 
     @Override
@@ -32,33 +32,33 @@ public class TileItemBlock extends TileCore {
         super.readFromDisk(compound);
 
         if (compound.contains("controller")) {
-            controllerPos = BlockPos.fromLong(compound.getLong("controller"));
+            controllerPos = BlockPos.of(compound.getLong("controller"));
         } else {
             controllerPos = null;
         }
 
-        if (compound.contains("item")) {
-            item = ItemStack.of(compound.getCompound("item"));
+        if (compound.contains("stack")) {
+            stack = ItemStack.of(compound.getCompound("stack"));
         } else {
-            item = ItemStack.EMPTY;
+            stack = ItemStack.EMPTY;
         }
     }
 
-    public void setController(TileController controller) {
+    public void setController(ControllerBlockEntity controller) {
         this.controllerPos = controller.getBlockPos();
     }
 
-    private TileController getController() {
-        if (controllerPos == null || controllerPos.equals(BlockPos.ZERO)) {
+    private ControllerBlockEntity getController() {
+        if (controllerPos == null || controllerPos.equals(BlockPos.ZERO) || level == null) {
             return null;
         }
-        return (TileController) level.getBlockEntity(controllerPos);
+        return (ControllerBlockEntity) level.getBlockEntity(controllerPos);
     }
 
     public void updateItemBlock(ItemStack force) {
-        TileController controller = getController();
+        ControllerBlockEntity controller = getController();
         if (controller != null) {
-            this.item = force.isEmpty() ? controller.getStackForPosition(getBlockPos()) : force;
+            this.stack = force.isEmpty() ? controller.getStackForPosition(getBlockPos()) : force;
             this.markDirtyAndNotify();
         }
     }
@@ -66,7 +66,7 @@ public class TileItemBlock extends TileCore {
     public ItemStack getDrop() {
         if (!DROPS) return null;
 
-        TileController controller = getController();
+        ControllerBlockEntity controller = getController();
         if (controller != null) {
             int slot = controller.getSlotForPosition(getBlockPos());
             if (slot == -1)
@@ -78,7 +78,7 @@ public class TileItemBlock extends TileCore {
 
             return drop;
         } else {
-            return item;
+            return stack;
         }
     }
 }
