@@ -1,5 +1,6 @@
 package com.girafi.impstorage.block;
 
+import com.girafi.impstorage.lib.ModInfo;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
@@ -40,7 +41,7 @@ public class CrateBlock extends Block {
         super.appendHoverText(stack, getter, tooltip, tooltipFlag);
 
         //TODO Test
-        if (this.getBlockStorage() > 0) tooltip.add(Component.translatable("tooltip.capacity.block").append(":").append(String.valueOf(this.getBlockStorage())));
-        if (this.getItemStorage() > 0) tooltip.add(Component.translatable("tooltip.capacity.item").append(":").append(String.valueOf(this.getItemStorage())));
+        if (this.getBlockStorage() > 0) tooltip.add(Component.translatable(ModInfo.ID + ".tooltip.capacity.block").append(":").append(String.valueOf(this.getBlockStorage())));
+        if (this.getItemStorage() > 0) tooltip.add(Component.translatable(ModInfo.ID + ".tooltip.capacity.item").append(":").append(String.valueOf(this.getItemStorage())));
     }
 }

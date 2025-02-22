@@ -1,9 +1,9 @@
 package com.girafi.impstorage.init;
 
-import com.girafi.impstorage.block.tile.ControllerBlockEntity;
-import com.girafi.impstorage.block.tile.ControllerInterfaceBlockEntity;
-import com.girafi.impstorage.block.tile.ConveyorBlockEntity;
-import com.girafi.impstorage.block.tile.ItemBlockEntity;
+import com.girafi.impstorage.block.blockentity.ControllerBlockEntity;
+import com.girafi.impstorage.block.blockentity.ControllerInterfaceBlockEntity;
+import com.girafi.impstorage.block.blockentity.ConveyorBlockEntity;
+import com.girafi.impstorage.block.blockentity.ItemBlockEntity;
 import com.girafi.impstorage.lib.ModInfo;
 import com.mojang.datafixers.types.Type;
 import net.minecraft.Util;

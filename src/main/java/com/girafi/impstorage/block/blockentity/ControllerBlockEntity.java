@@ -1,4 +1,4 @@
-package com.girafi.impstorage.block.tile;
+package com.girafi.impstorage.block.blockentity;
 
 import com.girafi.impstorage.block.ControllerBlock;
 import com.girafi.impstorage.block.PhantomBlock;
@@ -25,6 +25,8 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.common.capabilities.Capability;
+import net.minecraftforge.common.capabilities.ForgeCapabilities;
+import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.ItemHandlerHelper;
 import org.jetbrains.annotations.NotNull;
@@ -186,7 +188,7 @@ public class ControllerBlockEntity extends BlockEntityCore {
 
     private final Random random = new Random();
 
-    public ItemHandler itemHandler = new ItemHandler(this);
+    public LazyOptional<ItemHandler> itemHandler = LazyOptional.of(this::createItemHandler);
     public NonNullList<ItemStack> inventory = NonNullList.create();
 
     public BlockPos origin = null;
@@ -221,6 +223,10 @@ public class ControllerBlockEntity extends BlockEntityCore {
     // Block Queue
     private final ArrayDeque<QueueElement> blockQueue = new ArrayDeque<>();
     private int blockQueueTickCounter = 0;
+
+    protected ItemHandler createItemHandler() {
+        return new ItemHandler(this);
+    }
 
     @Override
     public void writeToDisk(CompoundTag compound) {
@@ -832,14 +838,23 @@ public class ControllerBlockEntity extends BlockEntityCore {
     }
 
     @Override
-    public boolean hasCapability(Capability<?> capability, @Nullable Direction facing) {
-        return !INVENTORY_BLOCK && capability == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY && isReady();
+    @Nonnull
+    public <T> LazyOptional<T> getCapability(@Nonnull Capability<T> cap, @Nullable Direction side) {
+        if (!this.remove && !INVENTORY_BLOCK && isReady() && cap == ForgeCapabilities.ITEM_HANDLER) {
+            return this.itemHandler.cast();
+        }
+        return super.getCapability(cap, side);
     }
 
     @Override
-    public <T> T getCapability(Capability<T> capability, @Nullable Direction facing) {
-        if (!INVENTORY_BLOCK && isReady())
-            if (capability == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY) return (T) itemHandler;
-        return super.getCapability(capability, facing);
+    public void invalidateCaps() {
+        super.invalidateCaps();
+        this.itemHandler.invalidate();
+    }
+
+    @Override
+    public void reviveCaps() {
+        super.reviveCaps();
+        this.itemHandler = LazyOptional.of(this::createItemHandler);
     }
 }

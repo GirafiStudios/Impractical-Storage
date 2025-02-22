@@ -1,6 +1,6 @@
 package com.girafi.impstorage.block;
 
-import com.girafi.impstorage.block.tile.ConveyorBlockEntity;
+import com.girafi.impstorage.block.blockentity.ConveyorBlockEntity;
 import com.girafi.impstorage.init.ModBlockEntities;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;

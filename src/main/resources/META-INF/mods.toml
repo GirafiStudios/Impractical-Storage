@@ -3,10 +3,10 @@ loaderVersion="${loader_version_range}"
 license="All Rights Reserved"
 
 [[mods]]
-    modId="aquaculture"
+    modId="impstorage"
     version="${mod_version}"
     displayName="Impractical Storage"
-    displayURL="https://legacy.curseforge.com/minecraft/mc-mods/impractical-storage"
+    displayURL="https://curseforge.com/minecraft/mc-mods/impractical-storage"
     issueTrackerURL="https://github.com/GirafiStudios/Impractical-Storage/issues"
     authors="Girafi, dmillerw"
     credits=""

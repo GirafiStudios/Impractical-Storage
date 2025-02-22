@@ -1,6 +1,6 @@
 package com.girafi.impstorage.client.render.blockentity;
 
-import com.girafi.impstorage.block.tile.ConveyorBlockEntity;
+import com.girafi.impstorage.block.blockentity.ConveyorBlockEntity;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.renderer.ItemBlockRenderTypes;

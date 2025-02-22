@@ -1,6 +1,6 @@
 package com.girafi.impstorage.block;
 
-import com.girafi.impstorage.block.tile.ControllerInterfaceBlockEntity;
+import com.girafi.impstorage.block.blockentity.ControllerInterfaceBlockEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.level.block.BaseEntityBlock;

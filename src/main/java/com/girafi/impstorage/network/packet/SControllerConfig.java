@@ -1,7 +1,7 @@
 package com.girafi.impstorage.network.packet;
 
 import com.girafi.impstorage.block.ControllerBlock;
-import com.girafi.impstorage.block.tile.ControllerBlockEntity;
+import com.girafi.impstorage.block.blockentity.ControllerBlockEntity;
 import com.girafi.impstorage.lib.data.SortingType;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;

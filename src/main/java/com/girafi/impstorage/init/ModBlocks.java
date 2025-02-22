@@ -22,7 +22,7 @@ public class ModBlocks {
     public static final DeferredRegister<Block> BLOCK_DEFERRED = DeferredRegister.create(ForgeRegistries.BLOCKS, ModInfo.ID);
 
     public static final RegistryObject<Block> ITEM_BLOCK = register(ItemBlockBlock::new, "item_block");
-    public static final RegistryObject<Block> CONTROLLER = register(ControllerBlock::new, "controller_interface");
+    public static final RegistryObject<Block> CONTROLLER = register(ControllerBlock::new, "controller");
     public static final RegistryObject<Block> CONTROLLER_INTERFACE = register(ControllerInterfaceBlock::new, "controller_interface");
     public static final RegistryObject<Block> WOOD_CRATE = register(() -> new CrateBlock(8), "wood_crate");
     public static final RegistryObject<Block> IRON_CRATE = register(() -> new CrateBlock(16), "iron_crate");

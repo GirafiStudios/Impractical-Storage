@@ -1,6 +1,7 @@
 package com.girafi.impstorage.block;
 
 import com.girafi.impstorage.init.ModBlocks;
+import com.girafi.impstorage.lib.ModInfo;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.item.ItemStack;
@@ -38,7 +39,7 @@ public class PhantomBlock extends Block {
     @Override
     public void appendHoverText(@Nonnull ItemStack stack, @Nullable BlockGetter blockGetter, @Nonnull List<Component> tooltip, @Nonnull TooltipFlag tooltipFlag) {
         super.appendHoverText(stack, blockGetter, tooltip, tooltipFlag);
-        tooltip.add(Component.translatable("tooltip.phantom.type." + TYPE.getName())); //TODO Test
+        tooltip.add(Component.translatable(ModInfo.ID + ".tooltip.phantom.type." + TYPE.getName())); //TODO Test
     }
 
     @Override

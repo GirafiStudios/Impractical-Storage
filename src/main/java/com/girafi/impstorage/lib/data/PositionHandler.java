@@ -1,6 +1,6 @@
 package com.girafi.impstorage.lib.data;
 
-import com.girafi.impstorage.block.tile.ControllerBlockEntity;
+import com.girafi.impstorage.block.blockentity.ControllerBlockEntity;
 import net.minecraft.core.BlockPos;
 
 public abstract class PositionHandler {

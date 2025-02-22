@@ -1,4 +1,4 @@
-package com.girafi.impstorage.block.tile;
+package com.girafi.impstorage.block.blockentity;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;

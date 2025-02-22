@@ -1,6 +1,6 @@
 package com.girafi.impstorage.block;
 
-import com.girafi.impstorage.block.tile.ControllerBlockEntity;
+import com.girafi.impstorage.block.blockentity.ControllerBlockEntity;
 import com.girafi.impstorage.client.screen.ControllerScreen;
 import com.girafi.impstorage.init.ModBlockEntities;
 import com.girafi.impstorage.init.ModBlocks;

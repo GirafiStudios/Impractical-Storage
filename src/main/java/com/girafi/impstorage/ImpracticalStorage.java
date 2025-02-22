@@ -5,7 +5,6 @@ import com.girafi.impstorage.core.BlockOverrides;
 import com.girafi.impstorage.init.ModBlockEntities;
 import com.girafi.impstorage.init.ModBlocks;
 import com.girafi.impstorage.init.ModItems;
-import com.girafi.impstorage.init.ModMenuTypes;
 import com.girafi.impstorage.lib.ImpracticalConfig;
 import com.girafi.impstorage.lib.ModInfo;
 import com.girafi.impstorage.network.PacketHandler;
@@ -42,7 +41,7 @@ public class ImpracticalStorage {
         modBus.addListener(this::setupClient);
         this.registerDeferredRegistries(modBus);
 
-        ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, ImpracticalConfig.spec);
+        ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, ImpracticalConfig.spec, "impractical-storage.toml");
     }
 
     private void setupCommon(FMLCommonSetupEvent event) {
@@ -58,7 +57,6 @@ public class ImpracticalStorage {
         ModItems.ITEM_DEFERRED.register(modBus);
         ModBlocks.BLOCK_DEFERRED.register(modBus);
         CREATIVE_TABS.register(modBus);
-        ModMenuTypes.MENU_DEFERRED.register(modBus);
         ModBlockEntities.BLOCK_ENTITY_DEFERRED.register(modBus);
     }
 }

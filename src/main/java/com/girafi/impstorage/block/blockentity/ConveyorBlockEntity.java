@@ -1,4 +1,4 @@
-package com.girafi.impstorage.block.tile;
+package com.girafi.impstorage.block.blockentity;
 
 import com.girafi.impstorage.block.ConveyorBlock;
 import com.girafi.impstorage.init.ModBlockEntities;
