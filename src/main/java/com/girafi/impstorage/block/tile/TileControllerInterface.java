@@ -1,72 +1,74 @@
 package com.girafi.impstorage.block.tile;
 
 import com.girafi.impstorage.block.BlockControllerInterface;
+import com.girafi.impstorage.init.ModBlockEntities;
 import com.girafi.impstorage.init.ModBlocks;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.EnumFacing;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.common.capabilities.Capability;
-import net.minecraftforge.items.CapabilityItemHandler;
 
 import javax.annotation.Nullable;
 
 public class TileControllerInterface extends TileCore {
-
     public BlockPos selectedController;
+
+    public TileControllerInterface(BlockPos pos, BlockState state) {
+        super(ModBlockEntities.CONTROLLER_INTERFACE.get(), pos, state);
+    }
 
     public void registerController(TileController tile) {
         if (selectedController == null) {
-            selectedController = tile.getPos();
+            selectedController = tile.getBlockPos();
             setState(BlockControllerInterface.InterfaceState.ACTIVE);
         } else {
-            if (selectedController != tile.getPos()) {
+            if (selectedController != tile.getBlockPos()) {
                 setState(BlockControllerInterface.InterfaceState.ERROR);
             }
         }
     }
 
     private void setState(BlockControllerInterface.InterfaceState state) {
-        world.setBlockState(pos,
-                ModBlocks.controller_interface.getDefaultState().withProperty(BlockControllerInterface.STATE, state));
+        level.setBlock(getBlockPos(), ModBlocks.CONTROLLER_INTERFACE.get().defaultBlockState().setValue(BlockControllerInterface.STATE, state), 2);
     }
 
     private TileController getController() {
-        if (selectedController == null || selectedController == BlockPos.ORIGIN)
+        if (selectedController == null || selectedController == BlockPos.ZERO)
             return null;
 
-        if (world.getBlockState(pos).getValue(BlockControllerInterface.STATE) == BlockControllerInterface.InterfaceState.ERROR)
+        if (level.getBlockState(getBlockPos()).getValue(BlockControllerInterface.STATE) == BlockControllerInterface.InterfaceState.ERROR)
             return null;
 
-        TileEntity tile = world.getTileEntity(selectedController);
-        if (tile == null || !(tile instanceof TileController))
+        BlockEntity blockEntity = level.getBlockEntity(selectedController);
+        if (blockEntity == null || !(blockEntity instanceof TileController))
             return null;
 
-        return (TileController) tile;
+        return (TileController) blockEntity;
     }
 
     @Override
-    public void writeToDisk(NBTTagCompound compound) {
+    public void writeToDisk(CompoundTag compound) {
         if (selectedController != null)
-            compound.setLong("selected", selectedController.toLong());
+            compound.putLong("selected", selectedController.toLong());
     }
 
     @Override
-    public void readFromDisk(NBTTagCompound compound) {
-        if (compound.hasKey("selected"))
+    public void readFromDisk(CompoundTag compound) {
+        if (compound.contains("selected"))
             selectedController = BlockPos.fromLong(compound.getLong("selected"));
         else
             selectedController = null;
     }
 
     @Override
-    public boolean hasCapability(Capability<?> capability, @Nullable EnumFacing facing) {
+    public boolean hasCapability(Capability<?> capability, @Nullable Direction facing) {
         return capability == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY && getController() != null;
     }
 
     @Nullable
     @Override
-    public <T> T getCapability(Capability<T> capability, @Nullable EnumFacing facing) {
+    public <T> T getCapability(Capability<T> capability, @Nullable Direction facing) {
         if (capability == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY) {
             return (T) getController().itemHandler;
         }

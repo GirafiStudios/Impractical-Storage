@@ -1,16 +1,11 @@
-package com.girafi.impstorage.client.gui.widget;
+package com.girafi.impstorage.client.screen.widget;
 
 import com.girafi.impstorage.lib.ModInfo;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.BufferBuilder;
-import net.minecraft.client.renderer.Tessellator;
-import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
-import net.minecraft.util.ResourceLocation;
-import net.minecraftforge.fml.client.config.GuiButtonExt;
-import net.minecraftforge.fml.client.config.GuiUtils;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraftforge.client.gui.widget.ExtendedButton;
 
-public class GuiButtonArrow extends GuiButtonExt {
-
+public class ButtonArrowScreen extends ExtendedButton {
     private static final ResourceLocation BUTTON_ARROWS = new ResourceLocation(ModInfo.ID, "textures/gui/arrows.png");
 
     public static final int ARROW_DOWN = 0;
@@ -23,13 +18,13 @@ public class GuiButtonArrow extends GuiButtonExt {
 
     private int arrowType;
 
-    public GuiButtonArrow(int id, int xPos, int yPos, int arrowType) {
+    public ButtonArrowScreen(int id, int xPos, int yPos, int arrowType) {
         super(id, xPos, yPos, "");
 
         this.arrowType = arrowType;
     }
 
-    public GuiButtonArrow(int id, int xPos, int yPos, int width, int height, int arrowType) {
+    public ButtonArrowScreen(int id, int xPos, int yPos, int width, int height, int arrowType) {
         super(id, xPos, yPos, width, height, "");
 
         this.arrowType = arrowType;

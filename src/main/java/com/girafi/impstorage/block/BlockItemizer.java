@@ -1,77 +1,73 @@
 package com.girafi.impstorage.block;
 
-import net.minecraft.block.material.Material;
-import net.minecraft.block.properties.IProperty;
-import net.minecraft.block.state.BlockStateContainer;
-import net.minecraft.block.state.IBlockState;
+
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.item.EntityItem;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.EnumFacing;
-import net.minecraft.util.Mirror;
-import net.minecraft.util.Rotation;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.HorizontalDirectionalBlock;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelAccessor;
+import net.minecraft.world.level.block.*;
+import net.minecraft.world.level.block.state.BlockBehaviour;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.DirectionProperty;
+import net.minecraft.world.level.material.MapColor;
+import net.minecraft.world.level.material.PushReaction;
+import org.jetbrains.annotations.Nullable;
+
+import javax.annotation.Nonnull;
 
 public class BlockItemizer extends Block {
     public static final DirectionProperty FACING = HorizontalDirectionalBlock.FACING;
 
     public BlockItemizer() {
-        super(Material.ANVIL);
-
-        setHardness(2F);
-        setResistance(2F);
+        super(BlockBehaviour.Properties.of().mapColor(MapColor.TERRACOTTA_WHITE).requiresCorrectToolForDrops().strength(2.0F, 2.0F).sound(SoundType.METAL).pushReaction(PushReaction.BLOCK));
 
         this.registerDefaultState(this.getStateDefinition().any().setValue(FACING, Direction.NORTH));
     }
 
     @Override
-    public void onBlockPlacedBy(World worldIn, BlockPos pos, IBlockState state, EntityLivingBase placer, ItemStack stack) {
-        worldIn.setBlockState(pos, state.withProperty(FACING, EnumFacing.getDirectionFromEntityLiving(pos, placer)), 2);
+    public void setPlacedBy(@Nonnull Level level, @Nonnull BlockPos pos, @Nonnull BlockState state, @Nullable LivingEntity livingEntity, @Nonnull ItemStack stack) {
+        if (livingEntity != null) {
+            level.setBlock(pos, state.setValue(FACING, Direction.orderedByNearest(livingEntity)[0]), 2);
+        }
     }
 
     @Override
-    public void onBlockAdded(World worldIn, BlockPos pos, IBlockState state) {
-        itemizeBlocks(worldIn, pos, state);
+    public void onPlace(@Nonnull BlockState state, @Nonnull Level level, @Nonnull BlockPos pos, @Nonnull BlockState state2, boolean p_60570_) {
+        itemizeBlocks(level, pos, state);
     }
 
     @Override
-    public void neighborChanged(IBlockState state, World worldIn, BlockPos pos, Block blockIn, BlockPos fromPos) {
-        itemizeBlocks(worldIn, pos, state);
+    public void neighborChanged(@Nonnull BlockState state, @Nonnull Level level, @Nonnull BlockPos pos, @Nonnull Block block, @Nonnull BlockPos neighbor, boolean update) {
+        itemizeBlocks(level, pos, state);
     }
 
-    private void itemizeBlocks(World world, BlockPos pos, IBlockState state) {
-        if (!world.isRemote) {
-            pos = pos.offset(state.getValue(FACING));
-            IBlockState s = world.getBlockState(pos);
-            if (!world.isAirBlock(pos)) {
-                ItemStack stack = new ItemStack(s.getBlock(), 1, s.getBlock().damageDropped(s));
+    private void itemizeBlocks(Level level, BlockPos pos, BlockState state) {
+        if (!level.isClientSide()) {
+            pos = pos.relative(state.getValue(FACING)); //TODO Test
+            BlockState s = level.getBlockState(pos);
+            if (!state.isAir()) {
+                ItemStack stack = new ItemStack(s.getBlock());
 
-                EntityItem entity = new EntityItem(world, pos.getX() + 0.5D, pos.getY() + 0.5D, pos.getZ() + 0.5D, stack);
-                entity.motionX = entity.motionY = entity.motionZ = 0;
-                world.spawnEntity(entity);
+                ItemEntity entity = new ItemEntity(level, pos.getX() + 0.5D, pos.getY() + 0.5D, pos.getZ() + 0.5D, stack);
+                entity.setDeltaMovement(0, 0, 0);
+                level.addFreshEntity(entity);
 
-                world.setBlockToAir(pos);
+                level.setBlock(pos, Blocks.AIR.defaultBlockState(), 2);
             }
         }
     }
 
     @Override
-    public IBlockState withRotation(IBlockState state, Rotation rot) {
-        return state.withProperty(FACING, rot.rotate(state.getValue(FACING)));
+    public BlockState rotate(BlockState state, LevelAccessor level, BlockPos pos, Rotation direction) {
+        return state.setValue(FACING, direction.rotate(state.getValue(FACING)));
     }
 
     @Override
-    public IBlockState withMirror(IBlockState state, Mirror mirrorIn) {
-        return state.withRotation(mirrorIn.toRotation(state.getValue(FACING)));
-    }
-
-    @Override
-    protected BlockStateContainer createBlockState() {
-        return new BlockStateContainer(this, new IProperty[]{FACING});
+    @Nonnull
+    public BlockState mirror(@Nonnull BlockState state, @Nonnull Mirror mirror) {
+        return state.setValue(FACING, mirror.rotation().rotate(state.getValue(FACING)));
     }
 }

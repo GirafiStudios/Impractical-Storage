@@ -24,13 +24,12 @@ public class ModBlocks {
     public static final RegistryObject<Block> ITEM_BLOCK = register(BlockItemBlock::new, "item_block");
     public static final RegistryObject<Block> CONTROLLER = register(BlockController::new, "controller_interface");
     public static final RegistryObject<Block> CONTROLLER_INTERFACE = register(BlockControllerInterface::new, "controller_interface");
-    public static final RegistryObject<Block> WOOD_CRATE = register(BlockCrate::new, "wood_crate");
-    public static final RegistryObject<Block> IRON_CRATE = register(BlockCrate::new, "iron_crate");
-    public static final RegistryObject<Block> GOLD_CRATE = register(BlockCrate::new, "gold_crate");
-    public static final RegistryObject<Block> DIAMOND_CRATE = register(BlockCrate::new, "diamond_crate");
-    public static final RegistryObject<Block> OBSIDIAN_CRATE = register(BlockCrate::new, "obsidian_crate");
-    public static final RegistryObject<Block> PHANTOM_BLOCK = registerNoTab(BlockPhantom::new, "phantom_block", null);
-    public static final RegistryObject<Block> PHANTOM_COLUMN = registerNoTab(BlockPhantom::new, "phantom_column", null);
+    public static final RegistryObject<Block> WOOD_CRATE = register(() -> new BlockCrate(8), "wood_crate");
+    public static final RegistryObject<Block> IRON_CRATE = register(() -> new BlockCrate(16), "iron_crate");
+    public static final RegistryObject<Block> GOLD_CRATE = register(() -> new BlockCrate(32), "gold_crate");
+    public static final RegistryObject<Block> DIAMOND_CRATE = register(() -> new BlockCrate(64), "diamond_crate");
+    public static final RegistryObject<Block> OBSIDIAN_CRATE = register(() -> new BlockCrate(8, 64), "obsidian_crate");
+    public static final RegistryObject<Block> PHANTOM = registerNoTab(BlockPhantom::new, "phantom", null);
     public static final RegistryObject<Block> CONVEYOR = register(BlockConveyor::new, "conveyor");
     public static final RegistryObject<Block> GRAVITY_INDUCER = register(BlockGravityInducer::new, "gravity_inducer");
     public static final RegistryObject<Block> ITEMIZER = register(BlockItemizer::new, "itemizer");
@@ -70,6 +69,10 @@ public class ModBlocks {
         ModItems.register(() -> new BlockItem(block.get(), Objects.requireNonNullElseGet(properties, Item.Properties::new)), name);
 
         return block;
+    }
+
+    public static Boolean always(BlockState state, BlockGetter blockGetter, BlockPos pos, EntityType<?> entityType) {
+        return true;
     }
 
     public static Boolean never(BlockState state, BlockGetter blockGetter, BlockPos pos, EntityType<?> entityType) {

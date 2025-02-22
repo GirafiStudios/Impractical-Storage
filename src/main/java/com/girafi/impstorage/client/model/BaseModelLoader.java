@@ -1,7 +1,7 @@
 package com.girafi.impstorage.client.model;
 
-import com.google.common.collect.Maps;
 import com.girafi.impstorage.lib.ModInfo;
+import com.google.common.collect.Maps;
 import net.minecraft.client.resources.IResourceManager;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.client.model.ICustomModelLoader;

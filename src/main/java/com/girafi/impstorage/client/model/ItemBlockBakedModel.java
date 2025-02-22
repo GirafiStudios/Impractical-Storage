@@ -1,50 +1,50 @@
 package com.girafi.impstorage.client.model;
 
+import com.girafi.impstorage.block.BlockItemBlock;
+import com.girafi.impstorage.core.BlockOverrides;
+import com.girafi.impstorage.init.ModBlocks;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-import com.girafi.impstorage.block.BlockItemBlock;
-import com.girafi.impstorage.init.ModBlocks;
-import com.girafi.impstorage.core.BlockOverrides;
-import net.minecraft.block.Block;
-import net.minecraft.block.state.IBlockState;
+import com.mojang.blaze3d.vertex.VertexFormat;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.BlockRendererDispatcher;
-import net.minecraft.client.renderer.RenderItem;
-import net.minecraft.client.renderer.block.model.*;
+import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.block.model.BakedQuad;
+import net.minecraft.client.renderer.block.model.BlockFaceUV;
+import net.minecraft.client.renderer.block.model.FaceBakery;
+import net.minecraft.client.renderer.blockentity.BlockEntityRenderDispatcher;
+import net.minecraft.client.renderer.entity.ItemRenderer;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.client.renderer.vertex.VertexFormat;
-import net.minecraft.init.Blocks;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.BlockRenderLayer;
-import net.minecraft.util.EnumFacing;
-import net.minecraft.util.ResourceLocation;
-import net.minecraftforge.client.MinecraftForgeClient;
-import net.minecraftforge.common.model.IModelState;
-import net.minecraftforge.common.property.IExtendedBlockState;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
-import org.lwjgl.util.vector.Vector3f;
+import net.minecraft.client.resources.model.BakedModel;
+import net.minecraft.core.Direction;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.RandomSource;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
+import net.minecraftforge.client.model.IDynamicBakedModel;
+import net.minecraftforge.client.model.data.ModelData;
+import org.jetbrains.annotations.NotNull;
+import org.joml.Vector3f;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Function;
 
-/**
- * Created by dmillerw
- */
-public class ItemBlockBakedModel implements IBakedModel {
+public class ItemBlockBakedModel implements IDynamicBakedModel {
 
-    private static final List<BakedQuad> EMPTY_LIST = Lists.newArrayList();
-
-    @SideOnly(Side.CLIENT)
-    private static BlockRendererDispatcher rendererDispatcher() {
-        return Minecraft.getMinecraft().getBlockRendererDispatcher();
+    @OnlyIn(Dist.CLIENT)
+    private static BlockEntityRenderDispatcher rendererDispatcher() {
+        return Minecraft.getInstance().getBlockEntityRenderDispatcher();
     }
 
-    @SideOnly(Side.CLIENT)
-    private static RenderItem renderItem() {
-        return Minecraft.getMinecraft().getRenderItem();
+    @OnlyIn(Dist.CLIENT)
+    private static ItemRenderer renderItem() {
+        return Minecraft.getInstance().getItemRenderer();
     }
 
     private Set<String> renderBlacklist = Sets.newHashSet();
@@ -52,106 +52,95 @@ public class ItemBlockBakedModel implements IBakedModel {
     private VertexFormat format;
     private TextureAtlasSprite wood;
 
-    public ItemBlockBakedModel(IModelState state, VertexFormat format, Function<ResourceLocation, TextureAtlasSprite> bakedTextureGetter) {
+    public ItemBlockBakedModel(VertexFormat format, Function<ResourceLocation, TextureAtlasSprite> bakedTextureGetter) {
         this.format = format;
         this.wood = bakedTextureGetter.apply(new ResourceLocation("impstorage:blocks/crate_wood"));
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     @Override
-    public List<BakedQuad> getQuads(@Nullable IBlockState state, @Nullable EnumFacing side, long rand) {
+    public List<BakedQuad> getQuads(@Nullable BlockState state, @Nullable Direction side, @NotNull RandomSource rand, @NotNull ModelData extraData, @org.jetbrains.annotations.Nullable RenderType renderType) {
         boolean error = false;
         List<BakedQuad> quads = Lists.newArrayList();
 
-        IExtendedBlockState extendedBlockState = (IExtendedBlockState) state;
-        ItemStack item = extendedBlockState.getValue(BlockItemBlock.ITEM);
+        ItemStack stack = state.getValue(BlockItemBlock.ITEM);
 
-        if (item == null)
+        if (stack == null || stack.isEmpty() || stack.getItem() == null) {
             error = true;
-        else if (item.isEmpty())
-            error = true;
-        else if (item.getItem() == null)
-            error = true;
-        else if (item.getItem().getRegistryName() == null)
-            error = true;
+        }
 
         if (!error) {
             try {
                 quads = safeGetQuads(state, side, rand);
             } catch (Exception ex) {
-                renderBlacklist.add(extendedBlockState.getValue(BlockItemBlock.ITEM).getItem().getRegistryName().toString());
+                renderBlacklist.add(state.getValue(BlockItemBlock.ITEM).getItem().getRegistryName().toString());
                 error = true;
             }
         }
 
         if (error) {
-            IBlockState s = ModBlocks.crate.getDefaultState();
+            BlockState s = ModBlocks.WOOD_CRATE.get().defaultBlockState();
             quads = rendererDispatcher().getModelForState(s).getQuads(s, side, rand);
         }
 
         return quads;
     }
 
-    @SideOnly(Side.CLIENT)
-    private List<BakedQuad> safeGetQuads(@Nullable IBlockState state, @Nullable EnumFacing side, long rand) {
-        IExtendedBlockState extendedBlockState = (IExtendedBlockState) state;
-
-        ItemStack itemStack = extendedBlockState.getValue(BlockItemBlock.ITEM);
+    @OnlyIn(Dist.CLIENT)
+    private List<BakedQuad> safeGetQuads(@Nullable BlockState state, @Nullable Direction side, long rand) {
+        ItemStack itemStack = state.getValue(BlockItemBlock.ITEM);
 
         List<BakedQuad> quads = Lists.newArrayList();
 
         Block renderBlock;
-        int renderMeta = itemStack.getMetadata();
         if (itemStack.isEmpty() || renderBlacklist.contains(itemStack.getItem().getRegistryName().toString())) {
-            renderBlock = ModBlocks.crate;
-            renderMeta = 0;
+            renderBlock = ModBlocks.WOOD_CRATE.get();
         } else {
             if (BlockOverrides.shouldTreatAsItem(itemStack.getItem())) {
-                renderBlock = ModBlocks.crate;
-                renderMeta = 0;
+                renderBlock = ModBlocks.WOOD_CRATE.get();
 
-                IBakedModel model = renderItem().getItemModelMesher().getItemModel(itemStack);
+                BakedModel model = renderItem().getItemModelMesher().getItemModel(itemStack);
                 TextureAtlasSprite texture = model.getParticleTexture();
                 if (texture == null)
                     texture = rendererDispatcher().getBlockModelShapes().getModelManager().getMissingModel().getParticleTexture();
 
                 BlockPartFace blockPartFace = new BlockPartFace(side, 0, texture.toString(), new BlockFaceUV(new float[]{0, 0, 16, 16}, 0));
-                BlockPartRotation blockPartRotation = new BlockPartRotation(new Vector3f(0, 0, 0), EnumFacing.Axis.X, 0, false);
+                BlockPartRotation blockPartRotation = new BlockPartRotation(new Vector3f(0, 0, 0), Direction.Axis.X, 0, false);
 
                 final float shrink = 2.5F;
 
                 if (MinecraftForgeClient.getRenderLayer() == BlockRenderLayer.CUTOUT) {
                     if (side != null) {
-                        if (side != EnumFacing.UP && side != EnumFacing.DOWN) {
-                            final float minX = side == EnumFacing.EAST || side == EnumFacing.WEST ? -0.005F : shrink;
-                            final float maxX = side == EnumFacing.EAST || side == EnumFacing.WEST ? 16.005f : 16 - shrink;
-                            final float minZ = side == EnumFacing.EAST || side == EnumFacing.WEST ? shrink : -0.005F;
-                            final float maxZ = side == EnumFacing.EAST || side == EnumFacing.WEST ? 16 - shrink : 16.005F;
+                        if (side != Direction.UP && side != Direction.DOWN) {
+                            final float minX = side == Direction.EAST || side == Direction.WEST ? -0.005F : shrink;
+                            final float maxX = side == Direction.EAST || side == Direction.WEST ? 16.005f : 16 - shrink;
+                            final float minZ = side == Direction.EAST || side == Direction.WEST ? shrink : -0.005F;
+                            final float maxZ = side == Direction.EAST || side == Direction.WEST ? 16 - shrink : 16.005F;
 
-                            BakedQuad itemQuad = new FaceBakery().makeBakedQuad(new Vector3f(minX, shrink, minZ), new Vector3f(maxX, 16 - shrink, maxZ), blockPartFace, model.getParticleTexture(), side, ModelRotation.X0_Y0, blockPartRotation, true, true);
+                            BakedQuad itemQuad = new FaceBakery().bakeQuad(new Vector3f(minX, shrink, minZ), new Vector3f(maxX, 16 - shrink, maxZ), blockPartFace, model.getParticleTexture(), side, ModelRotation.X0_Y0, blockPartRotation, true, true);
                             quads.add(itemQuad);
-                        } else if (side == EnumFacing.UP) {
+                        } else if (side == Direction.UP) {
                             final float minX = shrink;
                             final float maxX = 16 - shrink;
                             final float minZ = shrink;
                             final float maxZ = 16 - shrink;
 
-                            BakedQuad itemQuad = new FaceBakery().makeBakedQuad(new Vector3f(minX, 16.005F, minZ), new Vector3f(maxX, 16.005F, maxZ), blockPartFace, model.getParticleTexture(), side, ModelRotation.X0_Y0, blockPartRotation, true, true);
+                            BakedQuad itemQuad = new FaceBakery().bakeQuad(new Vector3f(minX, 16.005F, minZ), new Vector3f(maxX, 16.005F, maxZ), blockPartFace, model.getParticleTexture(), side, ModelRotation.X0_Y0, blockPartRotation, true, true);
                             quads.add(itemQuad);
                         }
                     }
                 }
             } else {
-                renderBlock = Block.getBlockFromItem(itemStack.getItem());
-                if (renderBlock == null || renderBlock == Blocks.AIR) renderBlock = ModBlocks.crate;
+                renderBlock = Block.byItem(itemStack.getItem());
+                if (renderBlock == null || renderBlock == Blocks.AIR) renderBlock = ModBlocks.WOOD_CRATE.get();
             }
         }
 
         if (!renderBlock.canRenderInLayer(renderBlock.getDefaultState(), MinecraftForgeClient.getRenderLayer()))
             return quads;
 
-        IBlockState renderState = renderBlock.getStateFromMeta(renderMeta);
-        IBakedModel model = rendererDispatcher().getModelForState(renderState);
+        BlockState renderState = renderBlock.getStateFromMeta(renderMeta);
+        BakedModel model = rendererDispatcher().getModelForState(renderState);
 
         quads.addAll(model.getQuads(renderState, side, rand));
 
@@ -159,7 +148,7 @@ public class ItemBlockBakedModel implements IBakedModel {
     }
 
     @Override
-    public boolean isAmbientOcclusion() {
+    public boolean useAmbientOcclusion() {
         return true;
     }
 
@@ -169,22 +158,18 @@ public class ItemBlockBakedModel implements IBakedModel {
     }
 
     @Override
-    public boolean isBuiltInRenderer() {
+    public boolean usesBlockLight() {
+        return false;
+    }
+
+    @Override
+    public boolean isCustomRenderer() {
         return true;
     }
 
     @Override
-    public TextureAtlasSprite getParticleTexture() {
+    @Nonnull
+    public TextureAtlasSprite getParticleIcon() {
         return wood;
-    }
-
-    @Override
-    public ItemCameraTransforms getItemCameraTransforms() {
-        return ItemCameraTransforms.DEFAULT;
-    }
-
-    @Override
-    public ItemOverrideList getOverrides() {
-        return ItemOverrideList.NONE;
     }
 }

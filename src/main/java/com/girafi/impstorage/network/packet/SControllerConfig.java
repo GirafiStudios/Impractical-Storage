@@ -1,20 +1,18 @@
 package com.girafi.impstorage.network.packet;
 
-import io.netty.buffer.ByteBuf;
 import com.girafi.impstorage.block.BlockController;
 import com.girafi.impstorage.block.tile.TileController;
 import com.girafi.impstorage.lib.data.SortingType;
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
-import net.minecraftforge.fml.common.FMLCommonHandler;
-import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
-import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
-import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
+import net.minecraft.core.BlockPos;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraftforge.network.NetworkEvent;
 
-public class SControllerConfig implements IMessage {
+import java.util.function.Supplier;
 
+public class SControllerConfig {
     protected BlockPos destination;
 
     protected int boundX;
@@ -31,110 +29,76 @@ public class SControllerConfig implements IMessage {
     private boolean offset;
     private boolean sort;
 
-    public SControllerConfig() {
-    }
-
-    public SControllerConfig(BlockPos destination) {
+    public SControllerConfig(BlockPos destination, boolean dimensions, int boundX, int boundY, int boundZ, boolean offset, int offsetX, int offsetY, int offsetZ, boolean sort, SortingType sortingType) {
         this.destination = destination;
-    }
-
-    public void setBoundaryDimensions(int x, int y, int z) {
-        this.dimensions = true;
-        this.boundX = x;
-        this.boundY = y;
-        this.boundZ = z;
-    }
-
-    public void setOffsetDimension(int x, int y, int z) {
-        this.offset = true;
-        this.offsetX = x;
-        this.offsetY = y;
-        this.offsetZ = z;
-    }
-
-    public void setSortingType(SortingType sortingType) {
-        this.sort = true;
+        this.dimensions = dimensions;
+        this.boundX = boundX;
+        this.boundY = boundY;
+        this.boundZ = boundZ;
+        this.offset = offset;
+        this.offsetX = offsetX;
+        this.offsetY = offsetY;
+        this.offsetZ = offsetZ;
+        this.sort = sort;
         this.sortingType = sortingType;
     }
 
-    @Override
-    public void toBytes(ByteBuf buf) {
-        buf.writeLong(destination.toLong());
+    public static void encode(SControllerConfig packet, FriendlyByteBuf buf) {
+        buf.writeBlockPos(packet.destination);
 
-        buf.writeBoolean(dimensions);
-        if (dimensions) {
-            buf.writeInt(boundX);
-            buf.writeInt(boundY);
-            buf.writeInt(boundZ);
+        buf.writeBoolean(packet.dimensions);
+        if (packet.dimensions) {
+            buf.writeInt(packet.boundX);
+            buf.writeInt(packet.boundY);
+            buf.writeInt(packet.boundZ);
         }
 
-        buf.writeBoolean(offset);
-        if (offset) {
-            buf.writeInt(offsetX);
-            buf.writeInt(offsetY);
-            buf.writeInt(offsetZ);
+        buf.writeBoolean(packet.offset);
+        if (packet.offset) {
+            buf.writeInt(packet.offsetX);
+            buf.writeInt(packet.offsetY);
+            buf.writeInt(packet.offsetZ);
         }
 
-        buf.writeBoolean(sort);
-        if (sort)
-            buf.writeInt(sortingType.ordinal());
+        buf.writeBoolean(packet.sort);
+        if (packet.sort) {
+            buf.writeInt(packet.sortingType.ordinal());
+        }
     }
 
-    @Override
-    public void fromBytes(ByteBuf buf) {
-        destination = BlockPos.fromLong(buf.readLong());
-
-        if (dimensions = buf.readBoolean()) {
-            boundX = buf.readInt();
-            boundY = buf.readInt();
-            boundZ = buf.readInt();
-        }
-
-        if (offset = buf.readBoolean()) {
-            offsetX = buf.readInt();
-            offsetY = buf.readInt();
-            offsetZ = buf.readInt();
-        }
-
-        if (sort = buf.readBoolean())
-            sortingType = SortingType.VALUES[buf.readInt()];
+    public static SControllerConfig decode(FriendlyByteBuf buf) {
+        return new SControllerConfig(buf.readBlockPos(),
+                buf.readBoolean(), buf.readInt(), buf.readInt(), buf.readInt(),
+                buf.readBoolean(), buf.readInt(), buf.readInt(), buf.readInt(),
+                buf.readBoolean(), SortingType.VALUES[buf.readInt()]);
     }
 
-    public static class Handler implements IMessageHandler<SControllerConfig, IMessage> {
+    public static class Handler {
+        public static void handle(SControllerConfig message, Supplier<NetworkEvent.Context> ctx) {
+                Level level = ctx.get().getSender().level();
+                BlockState state = level.getBlockState(message.destination);
+                BlockEntity blockEntity = level.getBlockEntity(message.destination);
+                if (blockEntity != null && blockEntity instanceof TileController controller) {
 
-        @Override
-        public IMessage onMessage(SControllerConfig message, MessageContext ctx) {
-            FMLCommonHandler.instance().getMinecraftServerInstance().addScheduledTask(() -> {
-                World world = ctx.getServerHandler().player.world;
-                IBlockState state = world.getBlockState(message.destination);
-                TileEntity tile = world.getTileEntity(message.destination);
-                if (tile != null && tile instanceof TileController) {
-                    TileController controller = (TileController) tile;
-
-                    if (message.sort)
+                    if (message.sort) {
                         controller.setSortingType(message.sortingType);
-
-                    if (!controller.isInventoryEmpty())
-                        return;
-
-                    if (message.dimensions) {
-                        controller.updateRawBounds(
-                                state.getValue(BlockController.FACING),
-                                message.boundX,
-                                message.boundY,
-                                message.boundZ);
                     }
 
-                    if (message.offset)
-                        controller.updateOffset(
-                                message.offsetX,
-                                message.offsetY,
-                                message.offsetZ);
+                    if (!controller.isInventoryEmpty()) {
+                        return;
+                    }
+
+                    if (message.dimensions) {
+                        controller.updateRawBounds(state.getValue(BlockController.FACING), message.boundX, message.boundY, message.boundZ);
+                    }
+
+                    if (message.offset) {
+                        controller.updateOffset(message.offsetX, message.offsetY, message.offsetZ);
+                    }
 
                     controller.markDirtyAndNotify();
                 }
-            });
-            return null;
+            ctx.get().setPacketHandled(true);
         }
     }
 }

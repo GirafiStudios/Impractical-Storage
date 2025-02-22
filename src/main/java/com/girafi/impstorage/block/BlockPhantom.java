@@ -1,100 +1,59 @@
 package com.girafi.impstorage.block;
 
 import com.girafi.impstorage.init.ModBlocks;
-import net.minecraft.block.state.BlockStateContainer;
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.creativetab.CreativeTabs;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.EnumBlockRenderType;
-import net.minecraft.util.NonNullList;
+import net.minecraft.network.chat.Component;
 import net.minecraft.util.StringRepresentable;
-import net.minecraft.util.math.AxisAlignedBB;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.RayTraceResult;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.IBlockAccess;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.state.BlockBehaviour;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.level.material.PushReaction;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.List;
 
 public class BlockPhantom extends Block {
     public static final EnumProperty<EnumType> TYPE = EnumProperty.create("type", EnumType.class);
 
     public BlockPhantom() {
-        super(BlockBehaviour.Properties.of().strength(-1.0F, 3600000.8F).noLootTable().noOcclusion().isValidSpawn(ModBlocks::never).noParticlesOnBreak().pushReaction(PushReaction.BLOCK));
+        super(BlockBehaviour.Properties.of().strength(-1.0F, 3600000.8F).noLootTable().noCollission().noOcclusion().isValidSpawn(ModBlocks::never).noParticlesOnBreak().pushReaction(PushReaction.BLOCK));
 
         this.registerDefaultState(this.getStateDefinition().any().setValue(TYPE, EnumType.BLOCK));
     }
 
     //TODO Hide bounding-box unless holding item
 
-
-    @Nullable
     @Override
-    protected RayTraceResult rayTrace(BlockPos pos, Vec3d start, Vec3d end, AxisAlignedBB boundingBox) {
-        return super.rayTrace(pos, start, end, boundingBox);
-    }
-
-    @Nullable
-    @Override
-    public AxisAlignedBB getCollisionBoundingBox(IBlockState blockState, IBlockAccess worldIn, BlockPos pos) {
-        return NULL_AABB;
+    @Nonnull
+    public RenderShape getRenderShape(@Nonnull BlockState state) {
+        return RenderShape.INVISIBLE;
     }
 
     @Override
-    public boolean isOpaqueCube(IBlockState state) {
-        return false;
-    }
-
-    @Override
-    public boolean isFullCube(IBlockState state) {
-        return false;
-    }
-
-    @Override
-    public EnumBlockRenderType getRenderType(IBlockState state) {
-        return EnumBlockRenderType.INVISIBLE;
-    }
-
-    @Override
-    protected BlockStateContainer createBlockState() {
-        return new BlockStateContainer(this, TYPE);
+    public void appendHoverText(@Nonnull ItemStack stack, @Nullable BlockGetter blockGetter, @Nonnull List<Component> tooltip, @Nonnull TooltipFlag tooltipFlag) {
+        super.appendHoverText(stack, blockGetter, tooltip, tooltipFlag);
+        tooltip.add(Component.translatable("tooltip.phantom.type." + TYPE.getName())); //TODO Test
     }
 
     public static enum EnumType implements StringRepresentable {
-        BLOCK("block", 0),
-        COLUMN("column", 1);
-
-        private static final BlockPhantom.EnumType[] META_LOOKUP = new BlockPhantom.EnumType[values().length];
+        BLOCK("block"),
+        COLUMN("column");
 
         private final String name;
-        private final int metadata;
-        private EnumType(String name, int metadata) {
+
+        private EnumType(String name) {
             this.name = name;
-            this.metadata = metadata;
         }
 
         @Override
-        public String getName() {
+        @Nonnull
+        public String getSerializedName() {
             return this.name;
-        }
-
-        public int getMetadata() {
-            return this.metadata;
-        }
-
-        public static BlockPhantom.EnumType fromMetadata(int meta) {
-            if (meta < 0 || meta >= META_LOOKUP.length) meta = 0;
-            return META_LOOKUP[meta];
-        }
-
-        static {
-            for (BlockPhantom.EnumType type : values()) {
-                META_LOOKUP[type.getMetadata()] = type;
-            }
         }
     }
 }

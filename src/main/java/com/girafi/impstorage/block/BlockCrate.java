@@ -1,89 +1,46 @@
 package com.girafi.impstorage.block;
 
-import com.girafi.impstorage.lib.ModInfo;
-import com.girafi.impstorage.lib.ModTab;
-import net.minecraft.block.Block;
-import net.minecraft.block.material.Material;
-import net.minecraft.block.properties.IProperty;
-import net.minecraft.block.properties.PropertyEnum;
-import net.minecraft.block.state.BlockStateContainer;
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.creativetab.CreativeTabs;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.IStringSerializable;
-import net.minecraft.util.NonNullList;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.SoundType;
+import net.minecraft.world.level.block.state.properties.NoteBlockInstrument;
+import net.minecraft.world.level.material.MapColor;
+import org.jetbrains.annotations.Nullable;
+
+import javax.annotation.Nonnull;
+import java.util.List;
 
 public class BlockCrate extends Block {
-    public static final PropertyEnum<EnumType> VARIANT = PropertyEnum.create("variant", EnumType.class);
+    private final int blockStorage;
+    private final int itemStorage;
 
-    public BlockCrate() {
-        super(Material.WOOD);
+    public BlockCrate(int itemStorage) {
+        this(0, itemStorage);
+    }
 
-        setHardness(2F);
-        setResistance(2F);
+    public BlockCrate(int blockStorage, int itemStorage) {
+        super(Block.Properties.of().mapColor(MapColor.WOOD).instrument(NoteBlockInstrument.BASS).strength(2.0F, 2.0F).sound(SoundType.WOOD));
+        this.blockStorage = blockStorage;
+        this.itemStorage = itemStorage;
+    }
 
-        setDefaultState(blockState.getBaseState().withProperty(VARIANT, EnumType.WOOD));
+    public int getBlockStorage() {
+        return this.blockStorage;
+    }
+
+    public int getItemStorage() {
+        return this.itemStorage;
     }
 
     @Override
-    public int damageDropped(IBlockState state) {
-        return state.getValue(VARIANT).getMetadata();
-    }
+    public void appendHoverText(@Nonnull ItemStack stack, @Nullable BlockGetter getter, @Nonnull List<Component> tooltip, @Nonnull TooltipFlag tooltipFlag) {
+        super.appendHoverText(stack, getter, tooltip, tooltipFlag);
 
-    @Override
-    protected BlockStateContainer createBlockState() {
-        return new BlockStateContainer(this, new IProperty[] { VARIANT });
-    }
-
-    public static enum EnumType implements IStringSerializable {
-        WOOD(    0, "wood",     0,  8),
-        IRON(    1, "iron",     0, 16),
-        GOLD(    2, "gold",     0, 32),
-        DIAMOND( 3, "diamond",  0, 64),
-        OBSIDIAN(4, "obsidian", 8, 64);
-
-        private static final EnumType[] META_LOOKUP = new EnumType[values().length];
-
-        private final int meta;
-        private final String name;
-
-        private final int blockStorage;
-        private final int itemStorage;
-
-        private EnumType(int meta, String name, int blockStorage, int itemStorage) {
-            this.meta = meta;
-            this.name = name;
-            this.blockStorage = blockStorage;
-            this.itemStorage = itemStorage;
-        }
-
-        public int getMetadata() {
-            return this.meta;
-        }
-
-        public int getBlockStorage() {
-            return this.blockStorage;
-        }
-
-        public int getItemStorage() {
-            return this.itemStorage;
-        }
-
-        @Override
-        public String getName() {
-            return this.name;
-        }
-
-        public static EnumType fromMetadata(int meta) {
-            if (meta < 0 || meta >= META_LOOKUP.length) meta = 0;
-            return META_LOOKUP[meta];
-        }
-
-        static {
-            for (EnumType type : values()) {
-                META_LOOKUP[type.getMetadata()] = type;
-            }
-        }
+        //TODO Test
+        if (this.getBlockStorage() > 0) tooltip.add(Component.translatable("tooltip.capacity.block").append(":").append(String.valueOf(this.getBlockStorage())));
+        if (this.getItemStorage() > 0) tooltip.add(Component.translatable("tooltip.capacity.item").append(":").append(String.valueOf(this.getItemStorage())));
     }
 }

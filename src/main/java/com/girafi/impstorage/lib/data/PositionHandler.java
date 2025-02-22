@@ -1,7 +1,7 @@
 package com.girafi.impstorage.lib.data;
 
 import com.girafi.impstorage.block.tile.TileController;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.core.BlockPos;
 
 public abstract class PositionHandler {
     public static final byte BAKED = 0;
@@ -73,7 +73,7 @@ public abstract class PositionHandler {
             long longPos = tile.slotToWorldMap[slot];
             if (longPos == -1) {
                 BlockPos pos = tile.getNextRandomPosition();
-                tile.slotToWorldMap[slot] = pos.toLong();
+                tile.slotToWorldMap[slot] = pos.asLong();
                 tile.worldToSlotMap[pos.getY()][pos.getX()][pos.getZ()] = slot;
             }
         }

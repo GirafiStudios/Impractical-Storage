@@ -1,69 +1,68 @@
 package com.girafi.impstorage.block.tile;
 
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.network.NetworkManager;
-import net.minecraft.network.play.server.SPacketUpdateTileEntity;
-import net.minecraft.tileentity.TileEntity;
+import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.Connection;
+import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.game.ClientGamePacketListener;
+import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.state.BlockState;
+import org.jetbrains.annotations.Nullable;
 
-import javax.annotation.Nullable;
+import javax.annotation.Nonnull;
 
-/**
- * Created by dmillerw
- */
-public class TileCore extends TileEntity {
+public class TileCore extends BlockEntity {
 
-    @Override
-    public final NBTTagCompound writeToNBT(NBTTagCompound compound) {
-        super.writeToNBT(compound);
-        writeToDisk(compound);
-        return compound;
+    public TileCore(BlockEntityType<?> blockEntityType, BlockPos pos, BlockState state) {
+        super(blockEntityType, pos, state);
     }
 
     @Override
-    public final void readFromNBT(NBTTagCompound compound) {
-        super.readFromNBT(compound);
+    public CompoundTag serializeNBT() {
+        CompoundTag tag = this.saveWithoutMetadata();
+        super.serializeNBT();
+        writeToDisk(tag);
+        return tag;
+    }
+
+    @Override
+    public void deserializeNBT(@Nonnull CompoundTag compound) {
+        super.deserializeNBT(compound);
         readFromDisk(compound);
     }
 
-    public void writeToDisk(NBTTagCompound compound) {
-
+    public void writeToDisk(CompoundTag compound) {
     }
 
-    public void readFromDisk(NBTTagCompound compound) {
-
+    public void readFromDisk(CompoundTag compound) {
     }
 
     public void markDirtyAndNotify() {
-        markDirty();
-
-        IBlockState state = world.getBlockState(pos);
-        world.notifyBlockUpdate(pos, state, state, 3);
-    }
-
-    public void notifyNeighbors() {
-        world.notifyNeighborsOfStateChange(pos, blockType, true);
+        BlockState state = level.getBlockState(getBlockPos());
+        level.setBlocksDirty(getBlockPos(), state, state);
     }
 
     @Nullable
     @Override
-    public SPacketUpdateTileEntity getUpdatePacket() {
-        return new SPacketUpdateTileEntity(pos, 0, getUpdateTag());
+    public Packet<ClientGamePacketListener> getUpdatePacket() {
+        return ClientboundBlockEntityDataPacket.create(this);
     }
 
     @Override
-    public void onDataPacket(NetworkManager net, SPacketUpdateTileEntity pkt) {
-        handleUpdateTag(pkt.getNbtCompound());
+    public void onDataPacket(Connection net, ClientboundBlockEntityDataPacket pkt) {
+        handleUpdateTag(pkt.getTag());
     }
 
     @Override
-    public NBTTagCompound getUpdateTag() {
-        return this.writeToNBT(new NBTTagCompound());
+    @Nonnull
+    public CompoundTag getUpdateTag() {
+        return this.serializeNBT();
     }
 
     @Override
-    public void handleUpdateTag(NBTTagCompound tag) {
-        this.readFromNBT(tag);
-        world.markBlockRangeForRenderUpdate(pos, pos);
+    public void handleUpdateTag(CompoundTag tag) {
+        this.deserializeNBT(tag);
     }
 }

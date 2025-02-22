@@ -1,12 +1,14 @@
 package com.girafi.impstorage.core;
 
+import com.girafi.impstorage.ImpracticalStorage;
 import com.google.common.collect.Maps;
 import com.google.common.reflect.TypeToken;
 import com.google.gson.GsonBuilder;
-import com.girafi.impstorage.ImpracticalStorage;
-import net.minecraft.block.*;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemBlock;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.level.block.*;
+import net.minecraftforge.registries.ForgeRegistries;
 
 import java.io.InputStreamReader;
 import java.io.Reader;
@@ -37,7 +39,7 @@ public class BlockOverrides {
         for (String key : data.keySet()) {
             Map<String, String> values = data.get(key);
             for (Map.Entry<String, String> value : values.entrySet()) {
-                Block block = Block.getBlockFromName(key + ":" + value.getKey());
+                Block block = ForgeRegistries.BLOCKS.getValue(new ResourceLocation(key, value.getKey()));
                 if (block != null) {
                     RenderAs renderAs = null;
                     if (value.getValue().equalsIgnoreCase("block")) renderAs = RenderAs.BLOCK;
@@ -52,19 +54,19 @@ public class BlockOverrides {
         RenderAs override = map.get(block);
         if (override != null) return override == RenderAs.ITEM;
 
-        return block instanceof BlockBush ||
-                block instanceof BlockWeb ||
-                block instanceof BlockHopper ||
-                block instanceof BlockTorch ||
-                block instanceof BlockRailBase ||
-                block instanceof BlockTripWire ||
-                block instanceof BlockTripWireHook ||
-                block instanceof BlockLever ||
-                block instanceof BlockVine;
+        return block instanceof BushBlock ||
+                block instanceof WebBlock ||
+                block instanceof HopperBlock ||
+                block instanceof TorchBlock ||
+                block instanceof BaseRailBlock ||
+                block instanceof TripWireBlock ||
+                block instanceof TripWireHookBlock ||
+                block instanceof LeverBlock ||
+                block instanceof VineBlock;
     }
 
     public static boolean shouldTreatAsItem(Item item) {
-        return (item instanceof ItemBlock ? shouldTreatAsItem(Block.getBlockFromItem(item)) : true);
+        return item instanceof BlockItem ? shouldTreatAsItem(Block.byItem(item)) : true;
     }
 
     public static enum RenderAs { BLOCK, ITEM }

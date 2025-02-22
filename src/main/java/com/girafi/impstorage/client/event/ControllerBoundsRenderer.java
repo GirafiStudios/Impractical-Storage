@@ -2,70 +2,67 @@ package com.girafi.impstorage.client.event;
 
 import com.girafi.impstorage.block.tile.TileController;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.GlStateManager;
-import net.minecraft.client.renderer.RenderGlobal;
-import net.minecraft.entity.Entity;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
-import net.minecraft.world.chunk.Chunk;
-import net.minecraftforge.client.event.RenderWorldLastEvent;
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.chunk.LevelChunk;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
 import org.lwjgl.opengl.GL11;
 
 import java.util.ArrayDeque;
 
 public class ControllerBoundsRenderer {
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     @SubscribeEvent
     public static void onWorldRenderLast(RenderWorldLastEvent event) {
-        Minecraft mc = Minecraft.getMinecraft();
+        Minecraft mc = Minecraft.getInstance();
         if (mc.player == null) {
             return;
         }
-		GlStateManager.pushMatrix();
-		GlStateManager.disableTexture2D();
-		GL11.glPushAttrib(GL11.GL_LIGHTING_BIT);
-		GlStateManager.disableLighting();
-		GlStateManager.enableBlend();
-		GlStateManager.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
-		
+        GlStateManager.pushMatrix();
+        GlStateManager.disableTexture2D();
+        GL11.glPushAttrib(GL11.GL_LIGHTING_BIT);
+        GlStateManager.disableLighting();
+        GlStateManager.enableBlend();
+        GlStateManager.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
+
         Entity entity = mc.getRenderViewEntity();
 
         double posX = entity.lastTickPosX + (entity.posX - entity.lastTickPosX) * event.getPartialTicks();
         double posY = entity.lastTickPosY + (entity.posY - entity.lastTickPosY) * event.getPartialTicks();
         double posZ = entity.lastTickPosZ + (entity.posZ - entity.lastTickPosZ) * event.getPartialTicks();
 
-        GlStateManager.translate(-posX, -posY, -posZ);        
+        GlStateManager.translate(-posX, -posY, -posZ);
         GlStateManager.glLineWidth(2.5F);
 
-        World world = entity.world;
-        int x1 = (int) entity.posX;
-        int z1 = (int) entity.posZ;
+        Level level = entity.level();
+        int x1 = (int) entity.getX();
+        int z1 = (int) entity.getZ();
 
-        Chunk chunks[] = new Chunk[9];
+        LevelChunk chunks[] = new Chunk[9];
 
-        chunks[4] = world.getChunkFromBlockCoords(new BlockPos(x1, 1, z1));
+        chunks[4] = level.getChunkAt(new BlockPos(x1, 1, z1));
         int cX = chunks[4].x;
         int cZ = chunks[4].z;
 
-        chunks[0] = world.getChunkFromChunkCoords(cX - 1, cZ - 1);
-        chunks[1] = world.getChunkFromChunkCoords(cX, cZ - 1);
-        chunks[2] = world.getChunkFromChunkCoords(cX + 1, cZ - 1);
+        chunks[0] = level.getChunk(cX - 1, cZ - 1);
+        chunks[1] = level.getChunk(cX, cZ - 1);
+        chunks[2] = level.getChunk(cX + 1, cZ - 1);
 
-        chunks[3] = world.getChunkFromChunkCoords(cX - 1, cZ);
-        chunks[5] = world.getChunkFromChunkCoords(cX + 1, cZ);
+        chunks[3] = level.getChunk(cX - 1, cZ);
+        chunks[5] = level.getChunk(cX + 1, cZ);
 
-        chunks[6] = world.getChunkFromChunkCoords(cX - 1, cZ + 1);
-        chunks[7] = world.getChunkFromChunkCoords(cX, cZ + 1);
-        chunks[8] = world.getChunkFromChunkCoords(cX + 1, cZ + 1);
+        chunks[6] = level.getChunk(cX - 1, cZ + 1);
+        chunks[7] = level.getChunk(cX, cZ + 1);
+        chunks[8] = level.getChunk(cX + 1, cZ + 1);
 
         ArrayDeque<BlockPos[]> boxes = new ArrayDeque<>();
         for (int c = 0; c < 9; ++c) {
-            for (TileEntity obj : chunks[c].getTileEntityMap().values()) {
+            for (BlockEntity obj : chunks[c].getBlockEntities().values()) {
                 if (obj instanceof TileController) {
                     TileController controller = (TileController) obj;
                     if (controller.isReady() && controller.showBounds) {
@@ -88,10 +85,10 @@ public class ControllerBoundsRenderer {
             RenderGlobal.drawBoundingBox(start.getX(), start.getY(), start.getZ(), end.getX(), end.getY(), end.getZ(), 1, 1, 1, 1);
         }
 
-		GlStateManager.enableTexture2D();
-		GlStateManager.enableLighting();
-		GlStateManager.disableBlend();
-		GL11.glPopAttrib();
-		GlStateManager.popMatrix();
+        GlStateManager.enableTexture2D();
+        GlStateManager.enableLighting();
+        GlStateManager.disableBlend();
+        GL11.glPopAttrib();
+        GlStateManager.popMatrix();
     }
 }

@@ -1,26 +1,21 @@
-package com.girafi.impstorage.client.gui;
+package com.girafi.impstorage.client.screen;
 
-import com.google.common.base.Predicate;
 import com.girafi.impstorage.block.tile.TileController;
-import com.girafi.impstorage.client.gui.widget.GuiButtonArrow;
+import com.girafi.impstorage.client.screen.widget.ButtonArrowScreen;
+import com.girafi.impstorage.lib.ImpracticalConfig;
 import com.girafi.impstorage.lib.ModInfo;
 import com.girafi.impstorage.lib.data.SortingType;
 import com.girafi.impstorage.network.PacketHandler;
 import com.girafi.impstorage.network.packet.SControllerConfig;
-import com.girafi.impstorage.proxy.CommonProxy;
+import com.google.common.base.Predicate;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiButton;
-import net.minecraft.client.gui.GuiScreen;
-import net.minecraft.client.gui.GuiTextField;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.text.translation.I18n;
-import net.minecraftforge.fml.client.config.GuiButtonExt;
-import org.lwjgl.input.Keyboard;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraftforge.client.gui.widget.ExtendedButton;
 
 import java.io.IOException;
 
-public class GuiController extends GuiScreen {
-
+public class ControllerScreen extends Screen {
     private static final ResourceLocation GUI_TEXTURE = new ResourceLocation(ModInfo.ID, "textures/gui/controller.png");
 
     private static final Predicate<String> NUMBER_VALIDATOR = s -> {
@@ -72,8 +67,8 @@ public class GuiController extends GuiScreen {
 
     private boolean isInventoryEmpty;
 
-    private GuiButtonExt buttonShowBounds;
-    private GuiButtonExt buttonSortType;
+    private ExtendedButton buttonShowBounds;
+    private ExtendedButton buttonSortType;
 
     private GuiTextField boundX;
     private GuiTextField boundY;
@@ -85,7 +80,8 @@ public class GuiController extends GuiScreen {
 
     private TileController tile;
 
-    public GuiController(TileController tile) {
+    public ControllerScreen(TileController tile) {
+        super();
         this.tile = tile;
 
         this.x = tile.rawX;
@@ -102,32 +98,32 @@ public class GuiController extends GuiScreen {
     }
 
     @Override
-    public void initGui() {
-        super.initGui();
+    public void init() {
+        super.init();
 
         this.guiLeft = (this.width - GUI_WIDTH) / 2;
         this.guiTop = (this.height - GUI_HEIGHT) / 2;
 
-        addButton(buttonShowBounds = new GuiButtonExt(BUTTON_TOGGLE_BOUNDS, guiLeft + 8, guiTop + 164, 101, 16,
+        addButton(buttonShowBounds = new ExtendedButton(BUTTON_TOGGLE_BOUNDS, guiLeft + 8, guiTop + 164, 101, 16,
                 I18n.translateToLocal(showBounds ? TEXT_HIDE_BOUNDS : TEXT_SHOW_BOUNDS)));
 
-        addButton(buttonSortType = new GuiButtonExt(BUTTON_SORTING_TYPE, guiLeft + 8, guiTop + 184, 101, 16,
+        addButton(buttonSortType = new ExtendedButton(BUTTON_SORTING_TYPE, guiLeft + 8, guiTop + 184, 101, 16,
                 I18n.translateToLocal(TEXT_SORTING_TYPE + sortingType.getUnlocalizedName())));
 
-        addButton(new GuiButtonArrow(BUTTON_BOUND_X_UP, guiLeft + 8, guiTop + 21, 31, 15, GuiButtonArrow.ARROW_UP));
-        addButton(new GuiButtonArrow(BUTTON_BOUND_X_DOWN, guiLeft + 8, guiTop + 60, 31, 15, GuiButtonArrow.ARROW_DOWN));
-        addButton(new GuiButtonArrow(BUTTON_BOUND_Y_UP, guiLeft + 43, guiTop + 21, 31, 15, GuiButtonArrow.ARROW_UP));
-        addButton(new GuiButtonArrow(BUTTON_BOUND_Y_DOWN, guiLeft + 43, guiTop + 60, 31, 15, GuiButtonArrow.ARROW_DOWN));
-        addButton(new GuiButtonArrow(BUTTON_BOUND_Z_UP, guiLeft + 78, guiTop + 21, 31, 15, GuiButtonArrow.ARROW_UP));
-        addButton(new GuiButtonArrow(BUTTON_BOUND_Z_DOWN, guiLeft + 78, guiTop + 60, 31, 15, GuiButtonArrow.ARROW_DOWN));
-        addButton(new GuiButtonArrow(BUTTON_OFFSET_X_UP, guiLeft + 8, guiTop + 92, 31, 15, GuiButtonArrow.ARROW_UP));
-        addButton(new GuiButtonArrow(BUTTON_OFFSET_X_DOWN, guiLeft + 8, guiTop + 131, 31, 15, GuiButtonArrow.ARROW_DOWN));
-        addButton(new GuiButtonArrow(BUTTON_OFFSET_Y_UP, guiLeft + 43, guiTop + 92, 31, 15, GuiButtonArrow.ARROW_UP));
-        addButton(new GuiButtonArrow(BUTTON_OFFSET_Y_DOWN, guiLeft + 43, guiTop + 131, 31, 15, GuiButtonArrow.ARROW_DOWN));
-        addButton(new GuiButtonArrow(BUTTON_OFFSET_Z_UP, guiLeft + 78, guiTop + 92, 31, 15, GuiButtonArrow.ARROW_UP));
-        addButton(new GuiButtonArrow(BUTTON_OFFSET_Z_DOWN, guiLeft + 78, guiTop + 131, 31, 15, GuiButtonArrow.ARROW_DOWN));
+        addButton(new ButtonArrowScreen(BUTTON_BOUND_X_UP, guiLeft + 8, guiTop + 21, 31, 15, ButtonArrowScreen.ARROW_UP));
+        addButton(new ButtonArrowScreen(BUTTON_BOUND_X_DOWN, guiLeft + 8, guiTop + 60, 31, 15, ButtonArrowScreen.ARROW_DOWN));
+        addButton(new ButtonArrowScreen(BUTTON_BOUND_Y_UP, guiLeft + 43, guiTop + 21, 31, 15, ButtonArrowScreen.ARROW_UP));
+        addButton(new ButtonArrowScreen(BUTTON_BOUND_Y_DOWN, guiLeft + 43, guiTop + 60, 31, 15, ButtonArrowScreen.ARROW_DOWN));
+        addButton(new ButtonArrowScreen(BUTTON_BOUND_Z_UP, guiLeft + 78, guiTop + 21, 31, 15, ButtonArrowScreen.ARROW_UP));
+        addButton(new ButtonArrowScreen(BUTTON_BOUND_Z_DOWN, guiLeft + 78, guiTop + 60, 31, 15, ButtonArrowScreen.ARROW_DOWN));
+        addButton(new ButtonArrowScreen(BUTTON_OFFSET_X_UP, guiLeft + 8, guiTop + 92, 31, 15, ButtonArrowScreen.ARROW_UP));
+        addButton(new ButtonArrowScreen(BUTTON_OFFSET_X_DOWN, guiLeft + 8, guiTop + 131, 31, 15, ButtonArrowScreen.ARROW_DOWN));
+        addButton(new ButtonArrowScreen(BUTTON_OFFSET_Y_UP, guiLeft + 43, guiTop + 92, 31, 15, ButtonArrowScreen.ARROW_UP));
+        addButton(new ButtonArrowScreen(BUTTON_OFFSET_Y_DOWN, guiLeft + 43, guiTop + 131, 31, 15, ButtonArrowScreen.ARROW_DOWN));
+        addButton(new ButtonArrowScreen(BUTTON_OFFSET_Z_UP, guiLeft + 78, guiTop + 92, 31, 15, ButtonArrowScreen.ARROW_UP));
+        addButton(new ButtonArrowScreen(BUTTON_OFFSET_Z_DOWN, guiLeft + 78, guiTop + 131, 31, 15, ButtonArrowScreen.ARROW_DOWN));
 
-        buttonList.stream().filter((b) -> b instanceof GuiButtonArrow).forEach((b) -> b.enabled = this.isInventoryEmpty);
+        buttonList.stream().filter((b) -> b instanceof ButtonArrowScreen).forEach((b) -> b.enabled = this.isInventoryEmpty);
 
         boundX = new GuiTextField(0, fontRenderer, guiLeft + 9, guiTop + 40, 29, 15);
         boundX.setText(Integer.toString(x));
@@ -293,13 +289,16 @@ public class GuiController extends GuiScreen {
         SortingType osortingType = sortingType;
 
         if (nx <= 0) nx = 1;
-        else if (nx >= CommonProxy.maxX) nx = CommonProxy.maxX - 1;
+        else if (nx >= ImpracticalConfig.BOUNDS_OPTIONS.maxX.get())
+            nx = ImpracticalConfig.BOUNDS_OPTIONS.maxX.get() - 1;
         if (ny <= 0) ny = 1;
-        else if (ny >= CommonProxy.maxY) ny = CommonProxy.maxY - 1;
+        else if (ny >= ImpracticalConfig.BOUNDS_OPTIONS.maxY.get())
+            ny = ImpracticalConfig.BOUNDS_OPTIONS.maxY.get() - 1;
         if (nz <= 0) nz = 1;
-        else if (nz >= CommonProxy.maxZ) nz = CommonProxy.maxZ - 1;
+        else if (nz >= ImpracticalConfig.BOUNDS_OPTIONS.maxZ.get())
+            nz = ImpracticalConfig.BOUNDS_OPTIONS.maxZ.get() - 1;
 
-        if (tile.getPos().getY() + offY <= 0) offY = offY + 1;
+        if (tile.getBlockPos().getY() + offY <= 0) offY = offY + 1;
 
         boundX.setText(Integer.toString(nx));
         boundY.setText(Integer.toString(ny));
@@ -308,18 +307,38 @@ public class GuiController extends GuiScreen {
         offsetY.setText(Integer.toString(offY));
         offsetZ.setText(Integer.toString(offZ));
 
-        SControllerConfig packet = new SControllerConfig(tile.getPos());
+        boolean dimensions = false;
+        int boundX = 0;
+        int boundY = 0;
+        int boundZ = 0;
+        boolean offset = false;
+        int offsetX = 0;
+        int offsetY = 0;
+        int offsetZ = 0;
+        boolean sort = false;
+        SortingType sortingType = SortingType.ROWS;
 
-        if (ox != nx || oy != ny || oz != nz)
-            packet.setBoundaryDimensions(nx, ny, nz);
+        if (ox != nx || oy != ny || oz != nz) {
+            dimensions = true;
+            boundX = nx;
+            boundY = ny;
+            boundZ = nz;
+        }
 
-        if (noffX != offX || noffY != offY || noffZ != offZ)
-            packet.setOffsetDimension(offX, offY, offZ);
+        if (noffX != offX || noffY != offY || noffZ != offZ) {
+            offset = true;
+            offsetX = offX;
+            offsetY = offY;
+            offsetZ = offZ;
+        }
 
-        if (osortingType != nsortingType)
-            packet.setSortingType(nsortingType);
+        if (osortingType != nsortingType) {
+            sort = true;
+            sortingType = nsortingType;
+        }
 
-        PacketHandler.INSTANCE.sendToServer(packet);
+        SControllerConfig packet = new SControllerConfig(tile.getBlockPos(), dimensions, boundX, boundY, boundZ, offset, offsetX, offsetY, offsetZ, sort, sortingType);
+        PacketHandler.CHANNEL.sendToServer(packet);
 
         x = nx;
         y = ny;
@@ -352,7 +371,7 @@ public class GuiController extends GuiScreen {
     }
 
     @Override
-    public boolean doesGuiPauseGame() {
+    public boolean isPauseScreen() {
         return false;
     }
 }

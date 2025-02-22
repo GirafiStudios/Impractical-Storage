@@ -2,139 +2,113 @@ package com.girafi.impstorage.block;
 
 import com.girafi.impstorage.block.property.UnlistedItemStack;
 import com.girafi.impstorage.block.tile.TileItemBlock;
-import com.girafi.impstorage.lib.ModInfo;
-import net.minecraft.block.Block;
-import net.minecraft.block.ITileEntityProvider;
-import net.minecraft.block.material.Material;
-import net.minecraft.block.properties.IProperty;
-import net.minecraft.block.state.BlockStateContainer;
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.inventory.InventoryHelper;
-import net.minecraft.item.ItemStack;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.BlockRenderLayer;
-import net.minecraft.util.EnumFacing;
-import net.minecraft.util.EnumHand;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.RayTraceResult;
-import net.minecraft.world.IBlockAccess;
-import net.minecraft.world.World;
+import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.BaseEntityBlock;
 import net.minecraft.world.level.block.Block;
-import net.minecraftforge.common.property.ExtendedBlockState;
-import net.minecraftforge.common.property.IUnlistedProperty;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-public class BlockItemBlock extends Block implements ITileEntityProvider {
-
-    public static final UnlistedItemStack ITEM = new UnlistedItemStack("item");
+public class BlockItemBlock extends BaseEntityBlock {
+    public static final UnlistedItemStack ITEM = new UnlistedItemStack("item");//TODO. NOT POSSIBLE ANYMORE, AS ITEMSTACK IS NOT COMPARABLE. Probably just store as NBT, don't need to be a state.
 
     public BlockItemBlock() {
         super(Material.ROCK);
 
-        setUnlocalizedName(ModInfo.ID + ":item_block");
-
         setBlockUnbreakable();
         setResistance(100F);
-
-        setDefaultState(this.blockState.getBaseState());
     }
 
+
     @Override
-    public void onBlockAdded(World worldIn, BlockPos pos, IBlockState state) {
-        if (!worldIn.isRemote) {
-            TileEntity tile = worldIn.getTileEntity(pos);
-            if (tile != null && tile instanceof TileItemBlock)
-                ((TileItemBlock) tile).updateItemBlock(ItemStack.EMPTY);
+    public void setPlacedBy(Level level, @Nonnull BlockPos pos, @Nonnull BlockState state, @Nullable LivingEntity livingEntity, @Nonnull ItemStack stack) {
+        if (!level.isClientSide()) {
+            BlockEntity blockEntity = level.getBlockEntity(pos);
+            if (blockEntity != null && blockEntity instanceof TileItemBlock) {
+                ((TileItemBlock) blockEntity).updateItemBlock(ItemStack.EMPTY);
+            }
         }
     }
 
     @Override
-    public void neighborChanged(IBlockState state, World worldIn, BlockPos pos, Block blockIn, BlockPos fromPos) {
-        TileEntity tile = worldIn.getTileEntity(pos);
-        if (tile != null && tile instanceof TileItemBlock)
-            ((TileItemBlock) tile).updateItemBlock(ItemStack.EMPTY);
-    }
-
-    @Override
-    public void breakBlock(World worldIn, BlockPos pos, IBlockState state) {
-        if (!worldIn.isRemote) {
-            TileEntity tile = worldIn.getTileEntity(pos);
-            if (tile != null && tile instanceof TileItemBlock) {
-                ((TileItemBlock) tile).getDrop();
+    public void neighborChanged(@Nonnull BlockState state, @Nonnull Level level, @Nonnull BlockPos pos, @Nonnull Block block, @Nonnull BlockPos neighBorPos, boolean b) {
+        BlockEntity blockEntity = level.getBlockEntity(pos);
+        if (blockEntity != null && blockEntity instanceof TileItemBlock) {
+            ((TileItemBlock) blockEntity).updateItemBlock(ItemStack.EMPTY);
         }
     }
-}
 
     @Override
-    public ItemStack getPickBlock(IBlockState state, RayTraceResult target, World world, BlockPos pos, EntityPlayer player) {
-        TileEntity tile = world.getTileEntity(pos);
-        if (tile != null && tile instanceof TileItemBlock) {
-            return ((TileItemBlock) tile).item;
+    public void breakBlock(Level level, BlockPos pos, BlockState state) {
+        if (!level.isClientSide()) {
+            BlockEntity blockEntity = level.getBlockEntity(pos);
+            if (blockEntity != null && blockEntity instanceof TileItemBlock) {
+                ((TileItemBlock) blockEntity).getDrop();
+            }
+        }
+    }
+
+    @Override
+    public ItemStack getPickBlock(BlockState state, RayTraceResult target, Level world, BlockPos pos, EntityPlayer player) {
+        BlockEntity blockEntity = world.getBlockEntity(pos);
+        if (blockEntity != null && blockEntity instanceof TileItemBlock) {
+            return ((TileItemBlock) blockEntity).item;
         }
 
         return super.getPickBlock(state, target, world, pos, player);
     }
 
     @Override
-    public boolean onBlockActivated(World worldIn, BlockPos pos, IBlockState state, EntityPlayer playerIn, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ) {
-        if (!worldIn.isRemote) {
-            if (playerIn.isSneaking()) {
-                TileEntity tile = worldIn.getTileEntity(pos);
-                if (tile instanceof TileItemBlock) {
-                    ItemStack drop = ((TileItemBlock)tile).getDrop();
+    public boolean onBlockActivated(Level level, BlockPos pos, BlockState state, Player playerIn, EnumHand hand, Direction facing, float hitX, float hitY, float hitZ) {
+        if (!level.isClientSide) {
+            if (playerIn.isCrouching()) {
+                BlockEntity blockEntity = level.getBlockEntity(pos);
+                if (blockEntity instanceof TileItemBlock) {
+                    ItemStack drop = ((TileItemBlock) blockEntity).getDrop();
                     if (!drop.isEmpty()) {
-                        InventoryHelper.spawnItemStack(worldIn, pos.getX(), pos.getY(), pos.getZ(), drop);
+                        InventoryHelper.spawnItemStack(level, pos.getX(), pos.getY(), pos.getZ(), drop);
                     }
-                    worldIn.setBlockToAir(pos);
+                    level.setBlockToAir(pos);
                 }
                 return true;
             } else {
                 return false;
             }
         } else {
-            return playerIn.isSneaking();
+            return playerIn.isCrouching();
         }
     }
 
     @Override
-    public boolean isOpaqueCube(IBlockState state) {
+    public boolean isOpaqueCube(BlockState state) {
         return false;
     }
 
     @Override
-    public boolean isFullCube(IBlockState state) {
+    public boolean isFullCube(BlockState state) {
         return false;
     }
 
     @Override
-    public boolean canRenderInLayer(IBlockState state, BlockRenderLayer layer) {
+    public boolean canRenderInLayer(BlockState state, BlockRenderLayer layer) {
         return true;
     }
 
     @Override
-    public boolean shouldSideBeRendered(IBlockState blockState, IBlockAccess blockAccess, BlockPos pos, EnumFacing side) {
+    public boolean shouldSideBeRendered(BlockState blockState, IBlockAccess blockAccess, BlockPos pos, Direction side) {
         return true;
     }
 
     @Override
-    public IBlockState getExtendedState(IBlockState state, IBlockAccess world, BlockPos pos) {
-        TileEntity tile = world.getTileEntity(pos);
-        if (tile != null && tile instanceof TileItemBlock) {
-            return ((TileItemBlock) tile).getExtendedBlockState(state);
-        }
-        return super.getExtendedState(state, world, pos);
-    }
-
-    @Override
-    protected BlockStateContainer createBlockState() {
-        return new ExtendedBlockState(this, new IProperty[0], new IUnlistedProperty[]{ITEM});
-    }
-
     @Nullable
-    @Override
-    public TileEntity createNewTileEntity(World worldIn, int meta) {
-        return new TileItemBlock();
+    public BlockEntity newBlockEntity(@Nonnull BlockPos pos, @Nonnull BlockState state) {
+        return new TileItemBlock(pos, state);
     }
 }
