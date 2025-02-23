@@ -6,6 +6,8 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;
 
+import javax.annotation.Nonnull;
+
 public class ItemBlockEntity extends BlockEntityCore {
     public static boolean DROPS = true;
     public ItemStack stack = ItemStack.EMPTY;
@@ -16,8 +18,8 @@ public class ItemBlockEntity extends BlockEntityCore {
     }
 
     @Override
-    public void writeToDisk(CompoundTag compound) {
-        super.writeToDisk(compound);
+    public void saveAdditional(@Nonnull CompoundTag compound) {
+        super.saveAdditional(compound);
 
         if (controllerPos != null) {
             compound.putLong("controller", controllerPos.asLong());
@@ -28,8 +30,8 @@ public class ItemBlockEntity extends BlockEntityCore {
     }
 
     @Override
-    public void readFromDisk(CompoundTag compound) {
-        super.readFromDisk(compound);
+    public void load(@Nonnull CompoundTag compound) {
+        super.load(compound);
 
         if (compound.contains("controller")) {
             controllerPos = BlockPos.of(compound.getLong("controller"));

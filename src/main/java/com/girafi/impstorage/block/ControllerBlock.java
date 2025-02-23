@@ -75,7 +75,7 @@ public class ControllerBlock extends BaseEntityBlock {
         if (level.isClientSide()) {
             BlockEntity blockEntity = level.getBlockEntity(pos);
             if (blockEntity instanceof ControllerBlockEntity) {
-                Minecraft.getInstance().setScreen(new ControllerScreen((ControllerBlockEntity) blockEntity)); //TODO Test
+                Minecraft.getInstance().setScreen(new ControllerScreen((ControllerBlockEntity) blockEntity));
             }
             return InteractionResult.SUCCESS;
         }

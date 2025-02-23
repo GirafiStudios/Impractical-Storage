@@ -81,6 +81,7 @@ public class SControllerConfig {
                 if (blockEntity != null && blockEntity instanceof ControllerBlockEntity controller) {
 
                     if (message.sort) {
+                        System.out.println("setSortingType");
                         controller.setSortingType(message.sortingType);
                     }
 
@@ -89,10 +90,12 @@ public class SControllerConfig {
                     }
 
                     if (message.dimensions) {
+                        System.out.println("dimensions");
                         controller.updateRawBounds(state.getValue(ControllerBlock.FACING), message.boundX, message.boundY, message.boundZ);
                     }
 
                     if (message.offset) {
+                        System.out.println("updateOffset");
                         controller.updateOffset(message.offsetX, message.offsetY, message.offsetZ);
                     }
 

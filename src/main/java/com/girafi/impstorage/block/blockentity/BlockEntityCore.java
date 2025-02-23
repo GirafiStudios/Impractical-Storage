@@ -19,26 +19,6 @@ public class BlockEntityCore extends BlockEntity {
         super(blockEntityType, pos, state);
     }
 
-    @Override
-    public CompoundTag serializeNBT() {
-        CompoundTag tag = this.saveWithoutMetadata();
-        super.serializeNBT();
-        writeToDisk(tag);
-        return tag;
-    }
-
-    @Override
-    public void deserializeNBT(@Nonnull CompoundTag compound) {
-        super.deserializeNBT(compound);
-        readFromDisk(compound);
-    }
-
-    public void writeToDisk(CompoundTag compound) {
-    }
-
-    public void readFromDisk(CompoundTag compound) {
-    }
-
     public void markDirtyAndNotify() {
         if (this.level != null) {
             BlockState state = level.getBlockState(getBlockPos());
@@ -56,5 +36,14 @@ public class BlockEntityCore extends BlockEntity {
     @Nonnull
     public CompoundTag getUpdateTag() {
         return this.saveWithoutMetadata();
+    }
+
+    @Override
+    public void onDataPacket(@Nonnull Connection manager, @Nonnull ClientboundBlockEntityDataPacket packet) {
+        super.onDataPacket(manager, packet);
+        if (packet.getTag() != null) {
+            this.load(packet.getTag());
+            this.setChanged();
+        }
     }
 }

@@ -25,9 +25,11 @@ public class ControllerInterfaceBlockEntity extends BlockEntityCore {
     public void registerController(ControllerBlockEntity tile) {
         if (selectedController == null) {
             selectedController = tile.getBlockPos();
+            System.out.println("Set controller from interface");
             setState(ControllerInterfaceBlock.InterfaceState.ACTIVE);
         } else {
             if (selectedController != tile.getBlockPos()) {
+                System.out.println("clear controller from interface");
                 setState(ControllerInterfaceBlock.InterfaceState.ERROR);
             }
         }
@@ -40,33 +42,41 @@ public class ControllerInterfaceBlockEntity extends BlockEntityCore {
     }
 
     private ControllerBlockEntity getController() {
-        if (selectedController == null || selectedController == BlockPos.ZERO || this.level == null) return null;
+        if (selectedController == null || selectedController == BlockPos.ZERO) return null;
 
-        if (this.level.getBlockState(getBlockPos()).getValue(ControllerInterfaceBlock.STATE) == ControllerInterfaceBlock.InterfaceState.ERROR)
+        System.out.println("beep");
+
+        BlockState state = this.level.getBlockState(getBlockPos());
+
+        if (state.getBlock() instanceof ControllerInterfaceBlock && state.getValue(ControllerInterfaceBlock.STATE) == ControllerInterfaceBlock.InterfaceState.ERROR)
             return null;
 
         BlockEntity blockEntity = this.level.getBlockEntity(selectedController);
         if (!(blockEntity instanceof ControllerBlockEntity)) return null;
 
+        System.out.println("getController");
+
         return (ControllerBlockEntity) blockEntity;
     }
 
     @Override
-    public void writeToDisk(CompoundTag compound) {
+    public void saveAdditional(@Nonnull CompoundTag tag) {
+        System.out.println("write");
+        super.saveAdditional(tag);
         if (selectedController != null) {
-            compound.putLong("selected", selectedController.asLong());
+            System.out.println("write: " + selectedController);
+            tag.putLong("selected", selectedController.asLong());
         }
     }
 
     @Override
-    public void readFromDisk(CompoundTag compound) {
-        if (compound.contains("selected")) {
-            selectedController = BlockPos.of(compound.getLong("selected"));
-        } else {
-            selectedController = null;
+    public void load(@Nonnull CompoundTag tag) {
+        System.out.println("Read");
+        super.load(tag);
+        if (tag.contains("selected")) {
+            selectedController = BlockPos.of(tag.getLong("selected"));
         }
     }
-
 
     @Override
     @Nonnull

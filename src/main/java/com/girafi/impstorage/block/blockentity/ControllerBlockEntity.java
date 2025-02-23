@@ -70,6 +70,7 @@ public class ControllerBlockEntity extends BlockEntityCore {
 
         private ItemHandler(ControllerBlockEntity controller) {
             this.controller = controller;
+            System.out.println("ItemHandler");
         }
 
         @Override
@@ -229,7 +230,8 @@ public class ControllerBlockEntity extends BlockEntityCore {
     }
 
     @Override
-    public void writeToDisk(CompoundTag compound) {
+    public void saveAdditional(@Nonnull CompoundTag compound) {
+        super.saveAdditional(compound);
         if (isReady()) {
             compound.putLong("origin", origin.asLong());
             compound.putLong("end", end.asLong());
@@ -307,7 +309,7 @@ public class ControllerBlockEntity extends BlockEntityCore {
 
                 CompoundTag item = new CompoundTag();
                 element.itemStack.save(item);
-                tag.put("item", item);
+                tag.put("stack", item);
 
                 nbt_blockQueue.add(tag);
             }
@@ -318,9 +320,13 @@ public class ControllerBlockEntity extends BlockEntityCore {
     }
 
     @Override
-    public void readFromDisk(CompoundTag compound) {
+    public void load(CompoundTag compound) {
+        super.load(compound);
+        System.out.println("read");
         if (compound.contains("origin") && compound.contains("end")) {
+            System.out.println("Origin before: " + origin);
             origin = BlockPos.of(compound.getLong("origin"));
+            System.out.println("Origin after: " + origin);
             end = BlockPos.of(compound.getLong("end"));
 
             rawX = compound.getInt("rawX");
@@ -382,7 +388,7 @@ public class ControllerBlockEntity extends BlockEntityCore {
                 CompoundTag tag = nbt_blockQueue.getCompound(i);
                 QueueElement element = new QueueElement();
                 element.slot = tag.getInt("slot");
-                element.itemStack = ItemStack.of(tag.getCompound("item"));
+                element.itemStack = ItemStack.of(tag.getCompound("stack"));
                 blockQueue.add(element);
             }
 
@@ -410,7 +416,7 @@ public class ControllerBlockEntity extends BlockEntityCore {
     }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, ControllerBlockEntity controller) {
-        if (controller.origin == null || controller.end == null || level == null) {
+        if (controller.origin == null || controller.end == null) {
             return;
         }
 
@@ -551,8 +557,6 @@ public class ControllerBlockEntity extends BlockEntityCore {
     public void setBounds(BlockPos nOrigin, BlockPos nEnd) {
         INVENTORY_BLOCK = true;
 
-        if (this.level == null) return;
-
         boolean clear = this.origin != null && this.end != null;
         BlockPos oldOrigin = this.origin;
 
@@ -561,14 +565,18 @@ public class ControllerBlockEntity extends BlockEntityCore {
             if (!stack.isEmpty()) currentInventory.add(stack.copy());
         }
 
+        if (this.level == null) return;
+
         // Clear everything old
         if (clear) {
+            System.out.println("clear");
             for (int y = 0; y < height; y++) {
                 for (int z = 0; z < zLength; z++) {
                     for (int x = 0; x < xLength; x++) {
                         BlockPos pos = oldOrigin.offset(x, y, z);
                         BlockState state = level.getBlockState(pos);
                         if (state.getBlock() == ModBlocks.ITEM_BLOCK.get()) {
+                            System.out.println("Clear old item block");
                             level.setBlock(pos, Blocks.AIR.defaultBlockState(), 2);
                         }
                     }
@@ -776,6 +784,8 @@ public class ControllerBlockEntity extends BlockEntityCore {
     private boolean setBlock(int slot, ItemStack itemStack) {
         ItemBlockEntity.DROPS = false;
 
+        System.out.println("Set block");
+
         if (slot == -1 || this.level == null) return false;
 
         if (slot >= this.slotToWorldMap.length) return false;
@@ -807,6 +817,7 @@ public class ControllerBlockEntity extends BlockEntityCore {
                 if (blockEntity instanceof ItemBlockEntity)
                     ((ItemBlockEntity) blockEntity).updateItemBlock(itemStack);
             } else {
+                System.out.println("SET IN STORAGE");
                 this.level.setBlock(pos, ModBlocks.ITEM_BLOCK.get().defaultBlockState(), 2);
                 BlockEntity blockEntity = this.level.getBlockEntity(pos);
                 if (blockEntity instanceof ItemBlockEntity) {

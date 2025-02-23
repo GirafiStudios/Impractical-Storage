@@ -111,7 +111,8 @@ public class ConveyorBlockEntity extends BlockEntityCore {
     }
 
     @Override
-    public void writeToDisk(CompoundTag tag) {
+    public void saveAdditional(@Nonnull CompoundTag tag) {
+        super.saveAdditional(tag);
         if (conveyorState != null) {
             tag.put("state", NbtUtils.writeBlockState(this.conveyorState));
         }
@@ -120,7 +121,8 @@ public class ConveyorBlockEntity extends BlockEntityCore {
     }
 
     @Override
-    public void readFromDisk(CompoundTag tag) {
+    public void load(CompoundTag tag) {
+        super.load(tag);
         if (tag.contains("state") && this.level != null) {
             this.conveyorState = NbtUtils.readBlockState(this.level.holderLookup(Registries.BLOCK), tag.getCompound("state"));
         } else {
