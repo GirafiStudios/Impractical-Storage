@@ -12,6 +12,8 @@ import net.minecraft.client.renderer.block.BlockRenderDispatcher;
 import net.minecraft.client.renderer.block.ModelBlockRenderer;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
+import net.minecraft.client.renderer.texture.OverlayTexture;
+import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.Level;
@@ -32,18 +34,20 @@ public class ConveyorBlockRenderer<T extends ConveyorBlockEntity> implements Blo
         BlockPos pos = conveyor.getBlockPos();
         BlockState conveyorState = conveyor.getConveyorState();
 
-        if (conveyorState == null) return;
+        if (conveyorState.isAir()) return;
 
         if (level != null && level.getBlockEntity(pos) instanceof ConveyorBlockEntity) {
+            ModelBlockRenderer.enableCaching();
             poseStack.pushPose();
 
             poseStack.translate(conveyor.getOffsetX(partialTicks), conveyor.getOffsetY(partialTicks) + 1, conveyor.getOffsetZ(partialTicks));
 
             this.renderBlock(pos.above(), conveyorState, poseStack, buffer, level, false, combinedOverlay);
 
-            poseStack.translate(0, 0, 0);
+            //poseStack.translate(0, 0, 0);
 
             poseStack.popPose();
+            ModelBlockRenderer.clearCache();
         }
     }
 

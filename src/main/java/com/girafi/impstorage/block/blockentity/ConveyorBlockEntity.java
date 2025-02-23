@@ -62,6 +62,7 @@ public class ConveyorBlockEntity extends BlockEntityCore {
 
     public static void tick(Level level, BlockPos pos, BlockState state, ConveyorBlockEntity conveyor) {
         final float STEP = 0.1F;
+        BlockState conveyorState = conveyor.getConveyorState();
 
         conveyor.previousProgress = conveyor.progress;
 
@@ -69,14 +70,14 @@ public class ConveyorBlockEntity extends BlockEntityCore {
             BlockPos inFront = pos.relative(conveyor.getFacing(level));
             BlockState inFrontAbove = level.getBlockState(inFront.above());
             if (inFrontAbove.isAir()) {
-                level.setBlock(inFront.above(), conveyor.getConveyorState(), 2);
+                level.setBlock(inFront.above(), conveyorState, 2);
 
                 conveyor.conveyorState = Blocks.AIR.defaultBlockState();
                 conveyor.previousProgress = 0F;
                 conveyor.progress = 0F;
             }
         } else {
-            if (!conveyor.getConveyorState().isAir()) {
+            if (!conveyorState.isAir()) {
                 conveyor.progress += STEP;
             } else {
                 // Check to see if there's a valid block above

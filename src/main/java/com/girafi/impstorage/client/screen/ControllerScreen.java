@@ -121,8 +121,7 @@ public class ControllerScreen extends Screen {
         addRenderableWidget(new ButtonArrowScreen(guiLeft + 78, guiTop + 92, 31, 15, ButtonArrowScreen.ARROW_UP, (button) -> update(this.x, this.y, this.z, this.offX, this.offY, this.offZ += 1, this.showBounds, this.sortingType)));
         addRenderableWidget(new ButtonArrowScreen(guiLeft + 78, guiTop + 131, 31, 15, ButtonArrowScreen.ARROW_DOWN, (button) -> update(this.x, this.y, this.z, this.offX, this.offY, this.offZ -= 1, this.showBounds, this.sortingType)));
 
-
-        this.renderables.stream().filter((b) -> b instanceof ButtonArrowScreen).forEach((b) -> ((ButtonArrowScreen) b).visible = this.isInventoryEmpty);
+        this.renderables.stream().filter((b) -> b instanceof ButtonArrowScreen).forEach((b) -> ((ButtonArrowScreen) b).active = this.isInventoryEmpty);
 
         this.boundX = new EditBox(this.font, this.guiLeft + 9, this.guiTop + 40, 29, 15, Component.translatable("impstorage.boundX"));
         this.boundX.setValue(Integer.toString(x));

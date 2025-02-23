@@ -3,6 +3,7 @@ package com.girafi.impstorage.network.packet;
 import com.girafi.impstorage.block.ControllerBlock;
 import com.girafi.impstorage.block.blockentity.ControllerBlockEntity;
 import com.girafi.impstorage.lib.data.SortingType;
+import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.level.Level;
@@ -47,23 +48,18 @@ public class SControllerConfig {
         buf.writeBlockPos(packet.destination);
 
         buf.writeBoolean(packet.dimensions);
-        if (packet.dimensions) {
-            buf.writeInt(packet.boundX);
-            buf.writeInt(packet.boundY);
-            buf.writeInt(packet.boundZ);
-        }
+        buf.writeInt(packet.boundX);
+        buf.writeInt(packet.boundY);
+        buf.writeInt(packet.boundZ);
+
 
         buf.writeBoolean(packet.offset);
-        if (packet.offset) {
-            buf.writeInt(packet.offsetX);
-            buf.writeInt(packet.offsetY);
-            buf.writeInt(packet.offsetZ);
-        }
+        buf.writeInt(packet.offsetX);
+        buf.writeInt(packet.offsetY);
+        buf.writeInt(packet.offsetZ);
 
         buf.writeBoolean(packet.sort);
-        if (packet.sort) {
-            buf.writeInt(packet.sortingType.ordinal());
-        }
+        buf.writeInt(packet.sortingType.ordinal());
     }
 
     public static SControllerConfig decode(FriendlyByteBuf buf) {
@@ -75,13 +71,13 @@ public class SControllerConfig {
 
     public static class Handler {
         public static void handle(SControllerConfig message, Supplier<NetworkEvent.Context> ctx) {
-                Level level = ctx.get().getSender().level();
+            Level level = Minecraft.getInstance().level;
+            if (level != null) {
                 BlockState state = level.getBlockState(message.destination);
                 BlockEntity blockEntity = level.getBlockEntity(message.destination);
-                if (blockEntity != null && blockEntity instanceof ControllerBlockEntity controller) {
+                if (blockEntity instanceof ControllerBlockEntity controller) {
 
                     if (message.sort) {
-                        System.out.println("setSortingType");
                         controller.setSortingType(message.sortingType);
                     }
 
@@ -90,18 +86,17 @@ public class SControllerConfig {
                     }
 
                     if (message.dimensions) {
-                        System.out.println("dimensions");
                         controller.updateRawBounds(state.getValue(ControllerBlock.FACING), message.boundX, message.boundY, message.boundZ);
                     }
 
                     if (message.offset) {
-                        System.out.println("updateOffset");
                         controller.updateOffset(message.offsetX, message.offsetY, message.offsetZ);
                     }
 
                     controller.markDirtyAndNotify();
+                    ctx.get().setPacketHandled(true);
                 }
-            ctx.get().setPacketHandled(true);
+            }
         }
     }
 }
