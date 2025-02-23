@@ -4,10 +4,13 @@ import com.girafi.impstorage.block.ConveyorBlock;
 import com.girafi.impstorage.init.ModBlockEntities;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.HolderGetter;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
@@ -19,7 +22,7 @@ import javax.annotation.Nonnull;
 public class ConveyorBlockEntity extends BlockEntityCore {
     public float progress = 0.0F;
     public float previousProgress = 0.0F;
-    public BlockState conveyorState = null;
+    private BlockState conveyorState = Blocks.AIR.defaultBlockState();
 
     public ConveyorBlockEntity(BlockPos pos, BlockState state) {
         super(ModBlockEntities.CONVEYOR.get(), pos, state);
@@ -32,7 +35,7 @@ public class ConveyorBlockEntity extends BlockEntityCore {
     @OnlyIn(Dist.CLIENT)
     public float getOffsetX(float ticks) {
         if (this.level != null) {
-            return (float) this.getFacing(this.level).getStepX() * getProgress(ticks);
+            return (float) this.getFacing(this.level).getOpposite().getStepX() * getProgress(ticks);
         }
         return 0.0F;
     }
@@ -40,7 +43,7 @@ public class ConveyorBlockEntity extends BlockEntityCore {
     @OnlyIn(Dist.CLIENT)
     public float getOffsetY(float ticks) {
         if (this.level != null) {
-            return (float) this.getFacing(this.level).getStepY() * getProgress(ticks);
+            return (float) this.getFacing(this.level).getOpposite().getStepY() * getProgress(ticks);
         }
         return 0.0F;
     }
@@ -48,7 +51,7 @@ public class ConveyorBlockEntity extends BlockEntityCore {
     @OnlyIn(Dist.CLIENT)
     public float getOffsetZ(float ticks) {
         if (this.level != null) {
-        return (float) this.getFacing(this.level).getStepZ() * getProgress(ticks);
+            return (float) this.getFacing(this.level).getOpposite().getStepZ() * getProgress(ticks);
         }
         return 0.0F;
     }
@@ -57,23 +60,23 @@ public class ConveyorBlockEntity extends BlockEntityCore {
         return -(previousProgress + (progress - previousProgress) * ticks);
     }
 
-    public static void serverTick(Level level, BlockPos pos, BlockState state, ConveyorBlockEntity conveyor) {
+    public static void tick(Level level, BlockPos pos, BlockState state, ConveyorBlockEntity conveyor) {
         final float STEP = 0.1F;
 
         conveyor.previousProgress = conveyor.progress;
+
         if (conveyor.progress >= 1.0F) {
             BlockPos inFront = pos.relative(conveyor.getFacing(level));
-            if (level.getBlockState(inFront.above()).isAir()) {
-                level.setBlock(inFront.above(), conveyor.getConveyorState(), 3);
+            BlockState inFrontAbove = level.getBlockState(inFront.above());
+            if (inFrontAbove.isAir()) {
+                level.setBlock(inFront.above(), conveyor.getConveyorState(), 2);
 
-                conveyor.conveyorState = null;
+                conveyor.conveyorState = Blocks.AIR.defaultBlockState();
                 conveyor.previousProgress = 0F;
                 conveyor.progress = 0F;
-
-                conveyor.markDirtyAndNotify();
             }
         } else {
-            if (conveyor.getConveyorState() != null) {
+            if (!conveyor.getConveyorState().isAir()) {
                 conveyor.progress += STEP;
             } else {
                 // Check to see if there's a valid block above
@@ -86,16 +89,15 @@ public class ConveyorBlockEntity extends BlockEntityCore {
 
                         if (blockEntity instanceof ConveyorBlockEntity) {
                             // and the conveyor isn't currently working on anything, we can begin
-                            if (((ConveyorBlockEntity) blockEntity).conveyorState == null) {
+                            if (((ConveyorBlockEntity) blockEntity).conveyorState.isAir()) {
                                 conveyor.conveyorState = level.getBlockState(pos.above());
                             }
                         } else {
                             conveyor.conveyorState = level.getBlockState(pos.above());
                         }
 
-                        if (conveyor.conveyorState != null) {
+                        if (!conveyor.conveyorState.isAir()) {
                             level.setBlock(pos.above(), Blocks.AIR.defaultBlockState(), 3);
-                            conveyor.markDirtyAndNotify();
                         }
                     }
                 } else {
@@ -107,28 +109,29 @@ public class ConveyorBlockEntity extends BlockEntityCore {
     }
 
     public BlockState getConveyorState() {
-        return conveyorState;
+        return this.conveyorState;
+    }
+
+    @Override
+    public void setLevel(@Nonnull Level level) {
+        super.setLevel(level);
+        if (level.holderLookup(Registries.BLOCK).get(this.conveyorState.getBlock().builtInRegistryHolder().key()).isEmpty()) {
+            this.conveyorState = Blocks.AIR.defaultBlockState();
+        }
     }
 
     @Override
     public void saveAdditional(@Nonnull CompoundTag tag) {
         super.saveAdditional(tag);
-        if (conveyorState != null) {
-            tag.put("state", NbtUtils.writeBlockState(this.conveyorState));
-        }
-
+        tag.put("state", NbtUtils.writeBlockState(this.conveyorState));
         tag.putFloat("previousProgress", this.previousProgress);
     }
 
     @Override
-    public void load(CompoundTag tag) {
+    public void load(@Nonnull CompoundTag tag) {
         super.load(tag);
-        if (tag.contains("state") && this.level != null) {
-            this.conveyorState = NbtUtils.readBlockState(this.level.holderLookup(Registries.BLOCK), tag.getCompound("state"));
-        } else {
-            this.conveyorState = null;
-        }
-
+        HolderGetter<Block> holderGetter = this.level != null ? this.level.holderLookup(Registries.BLOCK) : BuiltInRegistries.BLOCK.asLookup();
+        this.conveyorState = NbtUtils.readBlockState(holderGetter, tag.getCompound("state"));
         this.previousProgress = tag.getFloat("previousProgress");
         this.progress = previousProgress;
     }

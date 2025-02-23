@@ -784,8 +784,6 @@ public class ControllerBlockEntity extends BlockEntityCore {
     private boolean setBlock(int slot, ItemStack itemStack) {
         ItemBlockEntity.DROPS = false;
 
-        System.out.println("Set block");
-
         if (slot == -1 || this.level == null) return false;
 
         if (slot >= this.slotToWorldMap.length) return false;
@@ -817,7 +815,6 @@ public class ControllerBlockEntity extends BlockEntityCore {
                 if (blockEntity instanceof ItemBlockEntity)
                     ((ItemBlockEntity) blockEntity).updateItemBlock(itemStack);
             } else {
-                System.out.println("SET IN STORAGE");
                 this.level.setBlock(pos, ModBlocks.ITEM_BLOCK.get().defaultBlockState(), 2);
                 BlockEntity blockEntity = this.level.getBlockEntity(pos);
                 if (blockEntity instanceof ItemBlockEntity) {

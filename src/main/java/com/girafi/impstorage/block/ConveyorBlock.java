@@ -44,7 +44,7 @@ public class ConveyorBlock extends BaseEntityBlock {
     @Override
     @Nullable
     public <T extends BlockEntity> BlockEntityTicker<T> getTicker(@Nonnull Level level, @Nonnull BlockState state, @Nonnull BlockEntityType<T> blockEntityType) {
-        return level.isClientSide() ? createTickerHelper(blockEntityType, ModBlockEntities.CONVEYOR.get(), ConveyorBlockEntity::serverTick) : null;
+        return createTickerHelper(blockEntityType, ModBlockEntities.CONVEYOR.get(), ConveyorBlockEntity::tick);
     }
 
     @Override

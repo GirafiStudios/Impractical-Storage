@@ -53,7 +53,7 @@ public class ControllerBlock extends BaseEntityBlock {
     @Override
     @Nullable
     public <T extends BlockEntity> BlockEntityTicker<T> getTicker(@Nonnull Level level, @Nonnull BlockState state, @Nonnull BlockEntityType<T> blockEntityType) {
-        return level.isClientSide() ? createTickerHelper(blockEntityType, ModBlockEntities.CONTROLLER.get(), ControllerBlockEntity::serverTick) : null;
+        return !level.isClientSide() ? createTickerHelper(blockEntityType, ModBlockEntities.CONTROLLER.get(), ControllerBlockEntity::serverTick) : null;
     }
 
     @Override

@@ -4,6 +4,7 @@ import com.girafi.impstorage.block.ConveyorBlock;
 import com.girafi.impstorage.block.blockentity.ConveyorBlockEntity;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
+import com.mojang.math.Axis;
 import net.minecraft.client.renderer.ItemBlockRenderTypes;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
@@ -36,7 +37,7 @@ public class ConveyorBlockRenderer<T extends ConveyorBlockEntity> implements Blo
         if (level != null && level.getBlockEntity(pos) instanceof ConveyorBlockEntity) {
             poseStack.pushPose();
 
-            poseStack.translate(conveyor.getOffsetX(partialTicks), conveyor.getOffsetY(partialTicks), conveyor.getOffsetZ(partialTicks));
+            poseStack.translate(conveyor.getOffsetX(partialTicks), conveyor.getOffsetY(partialTicks) + 1, conveyor.getOffsetZ(partialTicks));
 
             this.renderBlock(pos.above(), conveyorState, poseStack, buffer, level, false, combinedOverlay);
 
@@ -50,6 +51,6 @@ public class ConveyorBlockRenderer<T extends ConveyorBlockEntity> implements Blo
     private void renderBlock(BlockPos pos, BlockState state, PoseStack poseStack, MultiBufferSource buffer, Level level, boolean b, int combinedOverlay) {
         RenderType renderType = ItemBlockRenderTypes.getMovingBlockRenderType(state);
         VertexConsumer vertexConsumer = buffer.getBuffer(renderType);
-        this.blockRenderer.getModelRenderer().tesselateBlock(level, this.blockRenderer.getBlockModel(state), state, pos.above(), poseStack, vertexConsumer, b, RandomSource.create(), state.getSeed(pos), combinedOverlay);
+        this.blockRenderer.getModelRenderer().tesselateBlock(level, this.blockRenderer.getBlockModel(state), state, pos, poseStack, vertexConsumer, b, RandomSource.create(), state.getSeed(pos), combinedOverlay);
     }
 }

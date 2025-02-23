@@ -16,19 +16,19 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 public class ControllerInterfaceBlockEntity extends BlockEntityCore {
-    public BlockPos selectedController;
+    public BlockPos selectedControllerPos;
 
     public ControllerInterfaceBlockEntity(BlockPos pos, BlockState state) {
         super(ModBlockEntities.CONTROLLER_INTERFACE.get(), pos, state);
     }
 
     public void registerController(ControllerBlockEntity tile) {
-        if (selectedController == null) {
-            selectedController = tile.getBlockPos();
+        if (selectedControllerPos == null) {
+            selectedControllerPos = tile.getBlockPos();
             System.out.println("Set controller from interface");
             setState(ControllerInterfaceBlock.InterfaceState.ACTIVE);
         } else {
-            if (selectedController != tile.getBlockPos()) {
+            if (selectedControllerPos != tile.getBlockPos()) {
                 System.out.println("clear controller from interface");
                 setState(ControllerInterfaceBlock.InterfaceState.ERROR);
             }
@@ -42,7 +42,7 @@ public class ControllerInterfaceBlockEntity extends BlockEntityCore {
     }
 
     private ControllerBlockEntity getController() {
-        if (selectedController == null || selectedController == BlockPos.ZERO) return null;
+        if (selectedControllerPos == null || selectedControllerPos == BlockPos.ZERO) return null;
 
         System.out.println("beep");
 
@@ -51,7 +51,7 @@ public class ControllerInterfaceBlockEntity extends BlockEntityCore {
         if (state.getBlock() instanceof ControllerInterfaceBlock && state.getValue(ControllerInterfaceBlock.STATE) == ControllerInterfaceBlock.InterfaceState.ERROR)
             return null;
 
-        BlockEntity blockEntity = this.level.getBlockEntity(selectedController);
+        BlockEntity blockEntity = this.level.getBlockEntity(selectedControllerPos);
         if (!(blockEntity instanceof ControllerBlockEntity)) return null;
 
         System.out.println("getController");
@@ -63,9 +63,9 @@ public class ControllerInterfaceBlockEntity extends BlockEntityCore {
     public void saveAdditional(@Nonnull CompoundTag tag) {
         System.out.println("write");
         super.saveAdditional(tag);
-        if (selectedController != null) {
-            System.out.println("write: " + selectedController);
-            tag.putLong("selected", selectedController.asLong());
+        if (selectedControllerPos != null) {
+            System.out.println("write: " + selectedControllerPos);
+            tag.putLong("selectedPos", selectedControllerPos.asLong());
         }
     }
 
@@ -73,8 +73,10 @@ public class ControllerInterfaceBlockEntity extends BlockEntityCore {
     public void load(@Nonnull CompoundTag tag) {
         System.out.println("Read");
         super.load(tag);
-        if (tag.contains("selected")) {
-            selectedController = BlockPos.of(tag.getLong("selected"));
+        if (tag.contains("selectedPos")) {
+            System.out.println("selectedPos before: " + this.selectedControllerPos);
+            selectedControllerPos = BlockPos.of(tag.getLong("selectedPos"));
+            System.out.println("selectedPos after: " + this.selectedControllerPos);
         }
     }
 

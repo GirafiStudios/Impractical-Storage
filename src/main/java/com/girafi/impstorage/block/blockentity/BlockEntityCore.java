@@ -21,8 +21,9 @@ public class BlockEntityCore extends BlockEntity {
 
     public void markDirtyAndNotify() {
         if (this.level != null) {
-            BlockState state = level.getBlockState(getBlockPos());
-            level.setBlocksDirty(getBlockPos(), state, state);
+            BlockPos pos = getBlockPos();
+            BlockState state = this.level.getBlockState(pos);
+            this.level.markAndNotifyBlock(pos, this.level.getChunkAt(pos), state, state, 2, 512);
         }
     }
 
