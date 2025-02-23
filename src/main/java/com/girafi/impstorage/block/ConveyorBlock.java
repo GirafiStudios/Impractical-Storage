@@ -30,6 +30,12 @@ public class ConveyorBlock extends BaseEntityBlock {
     }
 
     @Override
+    @Nonnull
+    public RenderShape getRenderShape(@Nonnull BlockState state) {
+        return RenderShape.MODEL;
+    }
+
+    @Override
     @Nullable
     public BlockEntity newBlockEntity(@Nonnull BlockPos pos, @Nonnull BlockState state) {
         return new ConveyorBlockEntity(pos, state);

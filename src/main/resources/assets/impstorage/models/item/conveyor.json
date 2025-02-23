@@ -1,9 +1,9 @@
 {
-  "parent": "block/orientable",
+  "parent": "minecraft:block/orientable",
   "textures": {
-    "top": "impstorage:blocks/conveyor_top",
-    "front": "impstorage:blocks/conveyor_top",
-    "side": "impstorage:blocks/conveyor_side"
+    "top": "impstorage:block/conveyor_top",
+    "front": "impstorage:block/conveyor_top",
+    "side": "impstorage:block/conveyor_side"
   },
   "display": {
     "thirdperson": {

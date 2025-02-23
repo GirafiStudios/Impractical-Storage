@@ -14,6 +14,8 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 
+import javax.annotation.Nonnull;
+
 public class ConveyorBlockEntity extends BlockEntityCore {
     public float progress = 0.0F;
     public float previousProgress = 0.0F;
@@ -23,23 +25,32 @@ public class ConveyorBlockEntity extends BlockEntityCore {
         super(ModBlockEntities.CONVEYOR.get(), pos, state);
     }
 
-    private Direction getFacing() {
+    private Direction getFacing(@Nonnull Level level) {
         return level.getBlockState(getBlockPos()).getValue(ConveyorBlock.FACING).getOpposite();
     }
 
     @OnlyIn(Dist.CLIENT)
     public float getOffsetX(float ticks) {
-        return (float) this.getFacing().getStepX() * getProgress(ticks);
+        if (this.level != null) {
+            return (float) this.getFacing(this.level).getStepX() * getProgress(ticks);
+        }
+        return 0.0F;
     }
 
     @OnlyIn(Dist.CLIENT)
     public float getOffsetY(float ticks) {
-        return (float) this.getFacing().getStepY() * getProgress(ticks);
+        if (this.level != null) {
+            return (float) this.getFacing(this.level).getStepY() * getProgress(ticks);
+        }
+        return 0.0F;
     }
 
     @OnlyIn(Dist.CLIENT)
     public float getOffsetZ(float ticks) {
-        return (float) this.getFacing().getStepZ() * getProgress(ticks);
+        if (this.level != null) {
+        return (float) this.getFacing(this.level).getStepZ() * getProgress(ticks);
+        }
+        return 0.0F;
     }
 
     private float getProgress(float ticks) {
@@ -51,9 +62,9 @@ public class ConveyorBlockEntity extends BlockEntityCore {
 
         conveyor.previousProgress = conveyor.progress;
         if (conveyor.progress >= 1.0F) {
-            BlockPos inFront = pos.relative(conveyor.getFacing());
+            BlockPos inFront = pos.relative(conveyor.getFacing(level));
             if (level.getBlockState(inFront.above()).isAir()) {
-                level.setBlock(inFront.above(), conveyor.getConveyorState(), 2);
+                level.setBlock(inFront.above(), conveyor.getConveyorState(), 3);
 
                 conveyor.conveyorState = null;
                 conveyor.previousProgress = 0F;
@@ -68,7 +79,7 @@ public class ConveyorBlockEntity extends BlockEntityCore {
                 // Check to see if there's a valid block above
                 if (!level.getBlockState(pos.above()).isAir()) {
                     // If so, check to see if we would be placing it on a conveyor, or if there's room
-                    BlockPos inFront = pos.relative(conveyor.getFacing());
+                    BlockPos inFront = pos.relative(conveyor.getFacing(level));
 
                     if (level.getBlockState(inFront.above()).isAir()) {
                         BlockEntity blockEntity = level.getBlockEntity(inFront);
@@ -83,7 +94,7 @@ public class ConveyorBlockEntity extends BlockEntityCore {
                         }
 
                         if (conveyor.conveyorState != null) {
-                            level.setBlock(pos.above(), Blocks.AIR.defaultBlockState(), 2);
+                            level.setBlock(pos.above(), Blocks.AIR.defaultBlockState(), 3);
                             conveyor.markDirtyAndNotify();
                         }
                     }

@@ -1,9 +1,9 @@
 {
   "parent": "block/block",
   "textures": {
-    "top": "impstorage:blocks/conveyor_top",
-    "side": "impstorage:blocks/conveyor_side",
-    "particle": "impstorage:blocks/conveyor_side"
+    "top": "impstorage:block/conveyor_top",
+    "side": "impstorage:block/conveyor_side",
+    "particle": "impstorage:block/conveyor_side"
   },
   "elements": [
     {

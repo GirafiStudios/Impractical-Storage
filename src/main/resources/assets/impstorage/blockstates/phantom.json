@@ -1,6 +1,6 @@
 {
   "variants": {
-    "type=block": { "model": "impstorage:phantom" },
-    "type=column": { "model": "impstorage:phantom" }
+    "type=block": { "model": "impstorage:block/phantom" },
+    "type=column": { "model": "impstorage:block/phantom" }
   }
 }

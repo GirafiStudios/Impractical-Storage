@@ -1,8 +1,8 @@
 {
-  "parent": "block/orientable",
+  "parent": "minecraft:block/orientable",
   "textures": {
-    "top": "impstorage:blocks/controller_input",
-    "front": "impstorage:blocks/controller_output",
-    "side": "impstorage:blocks/controller_input"
+    "top": "impstorage:block/controller_input",
+    "front": "impstorage:block/controller_output",
+    "side": "impstorage:block/controller_input"
   }
 }

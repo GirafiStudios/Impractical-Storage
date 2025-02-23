@@ -44,7 +44,7 @@ public class ItemBlockBakedModel implements IDynamicBakedModel {
 
     public ItemBlockBakedModel(VertexFormat format, Function<ResourceLocation, TextureAtlasSprite> bakedTextureGetter) {
         this.format = format;
-        this.wood = bakedTextureGetter.apply(new ResourceLocation("impstorage:blocks/crate_wood"));
+        this.wood = bakedTextureGetter.apply(new ResourceLocation("impstorage:blocks/wood_crate"));
     }
 
     @OnlyIn(Dist.CLIENT)

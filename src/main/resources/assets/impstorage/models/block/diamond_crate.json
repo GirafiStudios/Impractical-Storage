@@ -1,6 +1,6 @@
 {
   "parent": "block/cube_all",
   "textures": {
-    "all": "impstorage:blocks/crate_obsidian"
+    "all": "impstorage:block/diamond_crate"
   }
 }

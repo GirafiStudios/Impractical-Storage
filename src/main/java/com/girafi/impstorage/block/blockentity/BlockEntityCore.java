@@ -40,8 +40,10 @@ public class BlockEntityCore extends BlockEntity {
     }
 
     public void markDirtyAndNotify() {
-        BlockState state = level.getBlockState(getBlockPos());
-        level.setBlocksDirty(getBlockPos(), state, state);
+        if (this.level != null) {
+            BlockState state = level.getBlockState(getBlockPos());
+            level.setBlocksDirty(getBlockPos(), state, state);
+        }
     }
 
     @Nullable
@@ -51,18 +53,8 @@ public class BlockEntityCore extends BlockEntity {
     }
 
     @Override
-    public void onDataPacket(Connection net, ClientboundBlockEntityDataPacket pkt) {
-        handleUpdateTag(pkt.getTag());
-    }
-
-    @Override
     @Nonnull
     public CompoundTag getUpdateTag() {
-        return this.serializeNBT();
-    }
-
-    @Override
-    public void handleUpdateTag(CompoundTag tag) {
-        this.deserializeNBT(tag);
+        return this.saveWithoutMetadata();
     }
 }

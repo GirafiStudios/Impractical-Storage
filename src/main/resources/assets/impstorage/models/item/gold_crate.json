@@ -1,7 +1,7 @@
 {
   "parent": "block/cube_all",
   "textures": {
-    "all": "impstorage:blocks/crate_gold"
+    "all": "impstorage:block/gold_crate"
   },
   "display": {
     "thirdperson": {

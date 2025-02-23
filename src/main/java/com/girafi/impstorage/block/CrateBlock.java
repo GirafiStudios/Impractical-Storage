@@ -40,8 +40,7 @@ public class CrateBlock extends Block {
     public void appendHoverText(@Nonnull ItemStack stack, @Nullable BlockGetter getter, @Nonnull List<Component> tooltip, @Nonnull TooltipFlag tooltipFlag) {
         super.appendHoverText(stack, getter, tooltip, tooltipFlag);
 
-        //TODO Test
-        if (this.getBlockStorage() > 0) tooltip.add(Component.translatable(ModInfo.ID + ".tooltip.capacity.block").append(":").append(String.valueOf(this.getBlockStorage())));
-        if (this.getItemStorage() > 0) tooltip.add(Component.translatable(ModInfo.ID + ".tooltip.capacity.item").append(":").append(String.valueOf(this.getItemStorage())));
+        if (this.getBlockStorage() > 0) tooltip.add(Component.translatable(ModInfo.ID + ".tooltip.capacity.block").append(": ").append(String.valueOf(this.getBlockStorage())));
+        if (this.getItemStorage() > 0) tooltip.add(Component.translatable(ModInfo.ID + ".tooltip.capacity.item").append(": ").append(String.valueOf(this.getItemStorage())));
     }
 }

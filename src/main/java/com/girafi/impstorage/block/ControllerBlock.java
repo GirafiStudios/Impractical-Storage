@@ -39,6 +39,12 @@ public class ControllerBlock extends BaseEntityBlock {
     }
 
     @Override
+    @Nonnull
+    public RenderShape getRenderShape(@Nonnull BlockState state) {
+        return RenderShape.MODEL;
+    }
+
+    @Override
     @Nullable
     public BlockEntity newBlockEntity(@Nonnull BlockPos pos, @Nonnull BlockState state) {
         return new ControllerBlockEntity(pos, state);
@@ -70,10 +76,10 @@ public class ControllerBlock extends BaseEntityBlock {
             BlockEntity blockEntity = level.getBlockEntity(pos);
             if (blockEntity instanceof ControllerBlockEntity) {
                 Minecraft.getInstance().setScreen(new ControllerScreen((ControllerBlockEntity) blockEntity)); //TODO Test
-                return InteractionResult.SUCCESS;
             }
+            return InteractionResult.SUCCESS;
         }
-        return InteractionResult.PASS;
+        return InteractionResult.CONSUME;
     }
 
     @Override

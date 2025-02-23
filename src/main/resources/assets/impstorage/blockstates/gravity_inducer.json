@@ -1,10 +1,10 @@
 {
   "variants": {
-    "facing=up": { "model": "impstorage:gravity_inducer", "x": 270 },
-    "facing=down": { "model": "impstorage:gravity_inducer", "x": 90 },
-    "facing=north": { "model": "impstorage:gravity_inducer" },
-    "facing=south": { "model": "impstorage:gravity_inducer", "y": 180 },
-    "facing=west":  { "model": "impstorage:gravity_inducer", "y": 270 },
-    "facing=east":  { "model": "impstorage:gravity_inducer", "y": 90 }
+    "facing=up": { "model": "impstorage:block/gravity_inducer", "x": 270 },
+    "facing=down": { "model": "impstorage:block/gravity_inducer", "x": 90 },
+    "facing=north": { "model": "impstorage:block/gravity_inducer" },
+    "facing=south": { "model": "impstorage:block/gravity_inducer", "y": 180 },
+    "facing=west":  { "model": "impstorage:block/gravity_inducer", "y": 270 },
+    "facing=east":  { "model": "impstorage:block/gravity_inducer", "y": 90 }
   }
 }

@@ -1,7 +1,7 @@
 {
   "variants": {
-    "state=inactive": { "model": "impstorage:controller_interface" },
-    "state=active": { "model": "impstorage:controller_interface_active" },
-    "state=error": { "model": "impstorage:controller_interface_error" }
+    "state=inactive": { "model": "impstorage:block/controller_interface" },
+    "state=active": { "model": "impstorage:block/controller_interface_active" },
+    "state=error": { "model": "impstorage:block/controller_interface_error" }
   }
 }

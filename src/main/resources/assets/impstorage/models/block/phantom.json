@@ -1,6 +1,6 @@
 {
   "parent": "block/cube_all",
   "textures": {
-    "all": "minecraft:items/barrier"
+    "all": "minecraft:item/barrier"
   }
 }

@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "": {
+      "model": "impstorage:block/obsidian_crate"
+    }
+  }
+}

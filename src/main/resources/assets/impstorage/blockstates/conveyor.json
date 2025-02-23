@@ -1,8 +1,8 @@
 {
   "variants": {
-    "facing=north": { "model": "impstorage:conveyor" },
-    "facing=south": { "model": "impstorage:conveyor", "y": 180 },
-    "facing=west":  { "model": "impstorage:conveyor", "y": 270 },
-    "facing=east":  { "model": "impstorage:conveyor", "y": 90 }
+    "facing=north": { "model": "impstorage:block/conveyor" },
+    "facing=south": { "model": "impstorage:block/conveyor", "y": 180 },
+    "facing=west":  { "model": "impstorage:block/conveyor", "y": 270 },
+    "facing=east":  { "model": "impstorage:block/conveyor", "y": 90 }
   }
 }

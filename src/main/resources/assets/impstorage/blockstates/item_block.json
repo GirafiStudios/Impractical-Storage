@@ -1,5 +1,5 @@
 {
   "variants": {
-    "normal": { "model": "impstorage:item_block" }
+    "": { "model": "impstorage:block/item_block" }
   }
 }
