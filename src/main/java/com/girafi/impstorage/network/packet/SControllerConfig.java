@@ -79,17 +79,21 @@ public class SControllerConfig {
 
                     if (message.sort) {
                         controller.setSortingType(message.sortingType);
+                        System.out.println("Sort");
                     }
 
                     if (!controller.isInventoryEmpty()) {
+                        System.out.println("Return");
                         return;
                     }
 
                     if (message.dimensions) {
+                        System.out.println("Dimensions");
                         controller.updateRawBounds(state.getValue(ControllerBlock.FACING), message.boundX, message.boundY, message.boundZ);
                     }
 
                     if (message.offset) {
+                        System.out.println("Offset");
                         controller.updateOffset(message.offsetX, message.offsetY, message.offsetZ);
                     }
 

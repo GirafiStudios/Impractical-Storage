@@ -10,6 +10,7 @@ import com.girafi.impstorage.network.packet.SControllerConfig;
 import com.google.common.base.Predicate;
 import com.mojang.blaze3d.platform.InputConstants;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
@@ -30,8 +31,8 @@ public class ControllerScreen extends Screen {
         return true;
     };
 
-    private static final String TEXT_SHOW_BOUNDS = "impstorage.gui.text.bounds.show";
-    private static final String TEXT_HIDE_BOUNDS = "impstorage.gui.text.bounds.hide";
+    private static final Component TEXT_SHOW_BOUNDS = Component.translatable("impstorage.gui.text.bounds.show");
+    private static final Component TEXT_HIDE_BOUNDS = Component.translatable("impstorage.gui.text.bounds.hide");
     private static final String TEXT_SORTING_TYPE = "impstorage.gui.text.sort_type.";
 
     private static final int GUI_WIDTH = 117;
@@ -52,9 +53,6 @@ public class ControllerScreen extends Screen {
     private SortingType sortingType;
 
     private boolean isInventoryEmpty;
-
-    private ExtendedButton buttonShowBounds;
-    private ExtendedButton buttonSortType;
 
     private EditBox boundX;
     private EditBox boundY;
@@ -84,19 +82,31 @@ public class ControllerScreen extends Screen {
     }
 
     @Override
+    public void tick() {
+        super.tick();
+        this.boundX.tick();
+        this.boundY.tick();
+        this.boundZ.tick();
+        this.offsetX.tick();
+        this.offsetY.tick();
+        this.offsetZ.tick();
+    }
+
+    @Override
     public void init() {
         super.init();
 
         this.guiLeft = (this.width - GUI_WIDTH) / 2;
         this.guiTop = (this.height - GUI_HEIGHT) / 2;
 
-        addRenderableWidget(this.buttonShowBounds = new ExtendedButton(guiLeft + 8, guiTop + 164, 101, 16,
-                Component.translatable(showBounds ? TEXT_HIDE_BOUNDS : TEXT_SHOW_BOUNDS), (button) -> {
-            this.controllerBlockEntity.showBounds = !this.controllerBlockEntity.showBounds;
-            update(this.x, this.y, this.z, this.offX, this.offY, this.offZ, this.showBounds, this.sortingType);
+        addRenderableWidget(new ExtendedButton(guiLeft + 8, guiTop + 164, 101, 16,
+                TEXT_SHOW_BOUNDS, (button) -> {
+            update(this.x, this.y, this.z, this.offX, this.offY, this.offZ, !this.showBounds, this.sortingType);
+
+            button.setMessage(this.showBounds ? TEXT_HIDE_BOUNDS : TEXT_SHOW_BOUNDS);
         }));
 
-        addRenderableWidget(buttonSortType = new ExtendedButton(guiLeft + 8, guiTop + 184, 101, 16,
+        addRenderableWidget(new ExtendedButton(guiLeft + 8, guiTop + 184, 101, 16,
                 Component.translatable(TEXT_SORTING_TYPE + sortingType.getUnlocalizedName()), (button) -> {
             SortingType sortingType = this.sortingType;
             int ord = sortingType.ordinal();
@@ -106,53 +116,63 @@ public class ControllerScreen extends Screen {
                 sortingType = SortingType.VALUES[ord + 1];
             }
             update(this.x, this.y, this.z, this.offX, this.offY, this.offZ, this.showBounds, sortingType);
+            button.setMessage(Component.translatable(TEXT_SORTING_TYPE + sortingType.getUnlocalizedName()));
         }));
 
-        addRenderableWidget(new ButtonArrowScreen(guiLeft + 8, guiTop + 21, 31, 15, ButtonArrowScreen.ARROW_UP, (button) -> update(this.x += 1, this.y, this.z, this.offX, this.offY, this.offZ, this.showBounds, this.sortingType)));
-        addRenderableWidget(new ButtonArrowScreen(guiLeft + 8, guiTop + 60, 31, 15, ButtonArrowScreen.ARROW_DOWN, (button) -> update(this.x -= 1, this.y, this.z, this.offX, this.offY, this.offZ, this.showBounds, this.sortingType)));
-        addRenderableWidget(new ButtonArrowScreen(guiLeft + 43, guiTop + 21, 31, 15, ButtonArrowScreen.ARROW_UP, (button) -> update(this.x, this.y += 1, this.z, this.offX, this.offY, this.offZ, this.showBounds, this.sortingType)));
-        addRenderableWidget(new ButtonArrowScreen(guiLeft + 43, guiTop + 60, 31, 15, ButtonArrowScreen.ARROW_DOWN, (button) -> update(this.x, this.y -= 1, this.z, this.offX, this.offY, this.offZ, this.showBounds, this.sortingType)));;
-        addRenderableWidget(new ButtonArrowScreen(guiLeft + 78, guiTop + 21, 31, 15, ButtonArrowScreen.ARROW_UP, (button) -> update(this.x, this.y, this.z += 1, this.offX, this.offY, this.offZ, this.showBounds, this.sortingType)));
-        addRenderableWidget(new ButtonArrowScreen(guiLeft + 78, guiTop + 60, 31, 15, ButtonArrowScreen.ARROW_DOWN, (button) -> update(this.x, this.y, this.z -= 1, this.offX, this.offY, this.offZ, this.showBounds, this.sortingType)));;
-        addRenderableWidget(new ButtonArrowScreen(guiLeft + 8, guiTop + 92, 31, 15, ButtonArrowScreen.ARROW_UP, (button) -> update(this.x, this.y, this.z, this.offX += 1, this.offY, this.offZ, this.showBounds, this.sortingType)));
-        addRenderableWidget(new ButtonArrowScreen(guiLeft + 8, guiTop + 131, 31, 15, ButtonArrowScreen.ARROW_DOWN, (button) -> update(this.x, this.y, this.z, this.offX -= 1, this.offY, this.offZ, this.showBounds, this.sortingType)));
-        addRenderableWidget(new ButtonArrowScreen(guiLeft + 43, guiTop + 92, 31, 15, ButtonArrowScreen.ARROW_UP, (button) -> update(this.x, this.y, this.z, this.offX, this.offY += 1, this.offZ, this.showBounds, this.sortingType)));
-        addRenderableWidget(new ButtonArrowScreen(guiLeft + 43, guiTop + 131, 31, 15, ButtonArrowScreen.ARROW_DOWN, (button) -> update(this.x, this.y, this.z, this.offX, this.offY -= 1, this.offZ, this.showBounds, this.sortingType)));;
-        addRenderableWidget(new ButtonArrowScreen(guiLeft + 78, guiTop + 92, 31, 15, ButtonArrowScreen.ARROW_UP, (button) -> update(this.x, this.y, this.z, this.offX, this.offY, this.offZ += 1, this.showBounds, this.sortingType)));
-        addRenderableWidget(new ButtonArrowScreen(guiLeft + 78, guiTop + 131, 31, 15, ButtonArrowScreen.ARROW_DOWN, (button) -> update(this.x, this.y, this.z, this.offX, this.offY, this.offZ -= 1, this.showBounds, this.sortingType)));
+        addRenderableWidget(new ButtonArrowScreen(guiLeft + 8, guiTop + 21, 31, 15, ButtonArrowScreen.ARROW_UP, (button) -> update(this.x + 1, this.y, this.z, this.offX, this.offY, this.offZ, this.showBounds, this.sortingType)));
+        addRenderableWidget(new ButtonArrowScreen(guiLeft + 8, guiTop + 60, 31, 15, ButtonArrowScreen.ARROW_DOWN, (button) -> update(this.x - 1, this.y, this.z, this.offX, this.offY, this.offZ, this.showBounds, this.sortingType)));
+        addRenderableWidget(new ButtonArrowScreen(guiLeft + 43, guiTop + 21, 31, 15, ButtonArrowScreen.ARROW_UP, (button) -> update(this.x, this.y + 1, this.z, this.offX, this.offY, this.offZ, this.showBounds, this.sortingType)));
+        addRenderableWidget(new ButtonArrowScreen(guiLeft + 43, guiTop + 60, 31, 15, ButtonArrowScreen.ARROW_DOWN, (button) -> update(this.x, this.y - 1, this.z, this.offX, this.offY, this.offZ, this.showBounds, this.sortingType)));
+        ;
+        addRenderableWidget(new ButtonArrowScreen(guiLeft + 78, guiTop + 21, 31, 15, ButtonArrowScreen.ARROW_UP, (button) -> update(this.x, this.y, this.z + 1, this.offX, this.offY, this.offZ, this.showBounds, this.sortingType)));
+        addRenderableWidget(new ButtonArrowScreen(guiLeft + 78, guiTop + 60, 31, 15, ButtonArrowScreen.ARROW_DOWN, (button) -> update(this.x, this.y, this.z - 1, this.offX, this.offY, this.offZ, this.showBounds, this.sortingType)));
+        ;
+        addRenderableWidget(new ButtonArrowScreen(guiLeft + 8, guiTop + 92, 31, 15, ButtonArrowScreen.ARROW_UP, (button) -> update(this.x, this.y, this.z, this.offX + 1, this.offY, this.offZ, this.showBounds, this.sortingType)));
+        addRenderableWidget(new ButtonArrowScreen(guiLeft + 8, guiTop + 131, 31, 15, ButtonArrowScreen.ARROW_DOWN, (button) -> update(this.x, this.y, this.z, this.offX - 1, this.offY, this.offZ, this.showBounds, this.sortingType)));
+        addRenderableWidget(new ButtonArrowScreen(guiLeft + 43, guiTop + 92, 31, 15, ButtonArrowScreen.ARROW_UP, (button) -> update(this.x, this.y, this.z, this.offX, this.offY + 1, this.offZ, this.showBounds, this.sortingType)));
+        addRenderableWidget(new ButtonArrowScreen(guiLeft + 43, guiTop + 131, 31, 15, ButtonArrowScreen.ARROW_DOWN, (button) -> update(this.x, this.y, this.z, this.offX, this.offY - 1, this.offZ, this.showBounds, this.sortingType)));
+        ;
+        addRenderableWidget(new ButtonArrowScreen(guiLeft + 78, guiTop + 92, 31, 15, ButtonArrowScreen.ARROW_UP, (button) -> update(this.x, this.y, this.z, this.offX, this.offY, this.offZ + 1, this.showBounds, this.sortingType)));
+        addRenderableWidget(new ButtonArrowScreen(guiLeft + 78, guiTop + 131, 31, 15, ButtonArrowScreen.ARROW_DOWN, (button) -> update(this.x, this.y, this.z, this.offX, this.offY, this.offZ - 1, this.showBounds, this.sortingType)));
 
         this.renderables.stream().filter((b) -> b instanceof ButtonArrowScreen).forEach((b) -> ((ButtonArrowScreen) b).active = this.isInventoryEmpty);
 
         this.boundX = new EditBox(this.font, this.guiLeft + 9, this.guiTop + 40, 29, 15, Component.translatable("impstorage.boundX"));
         this.boundX.setValue(Integer.toString(x));
         this.boundX.setFilter(NUMBER_VALIDATOR);
+        this.addWidget(this.boundX);
 
         this.boundY = new EditBox(this.font, this.guiLeft + 44, this.guiTop + 40, 29, 15, Component.translatable("impstorage.boundY"));
         this.boundY.setValue(Integer.toString(y));
         this.boundY.setFilter(NUMBER_VALIDATOR);
+        this.addWidget(this.boundY);
 
         this.boundZ = new EditBox(this.font, this.guiLeft + 79, this.guiTop + 40, 29, 15, Component.translatable("impstorage.boundZ"));
         this.boundZ.setValue(Integer.toString(z));
         this.boundZ.setFilter(NUMBER_VALIDATOR);
+        this.addWidget(this.boundZ);
 
         this.offsetX = new EditBox(this.font, this.guiLeft + 9, this.guiTop + 111, 29, 15, Component.translatable("impstorage.offsetX"));
         this.offsetX.setValue(Integer.toString(offX));
         this.offsetX.setFilter(NUMBER_VALIDATOR);
+        this.addWidget(this.offsetX);
 
         this.offsetY = new EditBox(this.font, this.guiLeft + 44, this.guiTop + 111, 29, 15, Component.translatable("impstorage.offsetY"));
         this.offsetY.setValue(Integer.toString(offY));
         this.offsetY.setFilter(NUMBER_VALIDATOR);
+        this.addWidget(this.offsetY);
 
         this.offsetZ = new EditBox(this.font, this.guiLeft + 79, this.guiTop + 111, 29, 15, Component.translatable("impstorage.offsetZ"));
         this.offsetZ.setValue(Integer.toString(offZ));
         this.offsetZ.setFilter(NUMBER_VALIDATOR);
+        this.addWidget(this.offsetZ);
     }
 
     @Override
     public boolean charTyped(char key, int keyCode) {
-        if (super.charTyped(key, keyCode)) {
-            return true;
-        } else if (keyCode == InputConstants.KEY_RETURN && (boundX.isFocused() || boundY.isFocused() || boundZ.isFocused() || offsetX.isFocused() || offsetY.isFocused() || offsetZ.isFocused())) {
+        super.charTyped(key, keyCode);
+
+        if (boundX.isFocused() || boundY.isFocused() || boundZ.isFocused() || offsetX.isFocused() || offsetY.isFocused() || offsetZ.isFocused()) {
             String sx = boundX.getValue();
             String sy = boundY.getValue();
             String sz = boundZ.getValue();
@@ -168,31 +188,11 @@ public class ControllerScreen extends Screen {
             int oy = soy.isEmpty() ? offY : Integer.parseInt(soy);
             int oz = soz.isEmpty() ? offZ : Integer.parseInt(soz);
 
-            boundX.setFocused(false);
-            boundY.setFocused(false);
-            boundZ.setFocused(false);
-            offsetX.setFocused(false);
-            offsetY.setFocused(false);
-            offsetZ.setFocused(false);
-
             update(nx, ny, nz, ox, oy, oz, showBounds, sortingType);
 
             return true;
-        } else if (boundX.charTyped(key, keyCode)) {
-            return true;
-        } else if (boundY.charTyped(key, keyCode)) {
-            return true;
-        } else if (boundZ.charTyped(key, keyCode)) {
-            return true;
-        } else if (offsetX.charTyped(key, keyCode)) {
-            return true;
-        } else if (offsetY.charTyped(key, keyCode)) {
-            return true;
-        } else if (offsetZ.charTyped(key, keyCode)) {
-            return true;
-        } else {
-            return false;
         }
+        return false;
     }
 
     @Override
@@ -228,14 +228,14 @@ public class ControllerScreen extends Screen {
         else if (nz >= ImpracticalConfig.BOUNDS_OPTIONS.maxZ.get())
             nz = ImpracticalConfig.BOUNDS_OPTIONS.maxZ.get() - 1;
 
-        if (controllerBlockEntity.getBlockPos().getY() + offY <= 0) offY = offY + 1;
+        if (this.controllerBlockEntity.getBlockPos().getY() + offY <= 0) offY = offY + 1;
 
-        boundX.setValue(Integer.toString(nx));
-        boundY.setValue(Integer.toString(ny));
-        boundZ.setValue(Integer.toString(nz));
-        offsetX.setValue(Integer.toString(offX));
-        offsetY.setValue(Integer.toString(offY));
-        offsetZ.setValue(Integer.toString(offZ));
+        this.boundX.setValue(Integer.toString(nx));
+        this.boundY.setValue(Integer.toString(ny));
+        this.boundZ.setValue(Integer.toString(nz));
+        this.offsetX.setValue(Integer.toString(offX));
+        this.offsetY.setValue(Integer.toString(offY));
+        this.offsetZ.setValue(Integer.toString(offZ));
 
         boolean dimensions = false;
         int boundX = 0;
@@ -249,6 +249,7 @@ public class ControllerScreen extends Screen {
         SortingType sortingType = SortingType.ROWS;
 
         if (ox != nx || oy != ny || oz != nz) {
+            System.out.println("Dimensions set to true");
             dimensions = true;
             boundX = nx;
             boundY = ny;
@@ -283,7 +284,6 @@ public class ControllerScreen extends Screen {
     @Override
     public void render(@Nonnull GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTicks) {
         this.renderBackground(guiGraphics);
-        super.render(guiGraphics, mouseX, mouseY, partialTicks);
 
         guiGraphics.drawString(this.font, Component.translatable("impstorage.gui.label.bounds"), this.guiLeft + 8, this.guiTop + 10, 4210752, false);
         guiGraphics.drawString(this.font, Component.translatable("impstorage.gui.label.offset"), this.guiLeft + 8, this.guiTop + 81, 4210752, false);
@@ -296,6 +296,8 @@ public class ControllerScreen extends Screen {
         this.offsetX.render(guiGraphics, mouseX, mouseY, partialTicks);
         this.offsetY.render(guiGraphics, mouseX, mouseY, partialTicks);
         this.offsetZ.render(guiGraphics, mouseX, mouseY, partialTicks);
+
+        super.render(guiGraphics, mouseX, mouseY, partialTicks);
     }
 
     @Override
