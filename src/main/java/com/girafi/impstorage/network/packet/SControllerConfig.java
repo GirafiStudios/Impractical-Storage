@@ -72,35 +72,38 @@ public class SControllerConfig {
     public static class Handler {
         public static void handle(SControllerConfig message, Supplier<NetworkEvent.Context> ctx) {
             Level level = Minecraft.getInstance().level;
-            if (level != null) {
-                BlockState state = level.getBlockState(message.destination);
-                BlockEntity blockEntity = level.getBlockEntity(message.destination);
-                if (blockEntity instanceof ControllerBlockEntity controller) {
+            ctx.get().enqueueWork(() -> {
+                if (level != null) {
+                    BlockState state = level.getBlockState(message.destination);
+                    BlockEntity blockEntity = level.getBlockEntity(message.destination);
+                    if (blockEntity instanceof ControllerBlockEntity controller) {
 
-                    if (message.sort) {
-                        controller.setSortingType(message.sortingType);
-                        System.out.println("Sort");
+                        if (message.sort) {
+                            controller.setSortingType(message.sortingType);
+                            System.out.println("Sort");
+                        }
+
+                        if (!controller.isInventoryEmpty()) {
+                            System.out.println("Return");
+                            return;
+                        }
+
+                        if (message.dimensions) {
+                            System.out.println("Dimensions");
+                            controller.updateRawBounds(state.getValue(ControllerBlock.FACING), message.boundX, message.boundY, message.boundZ);
+                        }
+
+                        if (message.offset) {
+                            System.out.println("Offset");
+                            controller.updateOffset(message.offsetX, message.offsetY, message.offsetZ);
+                        }
+
+                        controller.setChanged();
+                        System.out.println("setChanged");
+                        ctx.get().setPacketHandled(true);
                     }
-
-                    if (!controller.isInventoryEmpty()) {
-                        System.out.println("Return");
-                        return;
-                    }
-
-                    if (message.dimensions) {
-                        System.out.println("Dimensions");
-                        controller.updateRawBounds(state.getValue(ControllerBlock.FACING), message.boundX, message.boundY, message.boundZ);
-                    }
-
-                    if (message.offset) {
-                        System.out.println("Offset");
-                        controller.updateOffset(message.offsetX, message.offsetY, message.offsetZ);
-                    }
-
-                    controller.markDirtyAndNotify();
-                    ctx.get().setPacketHandled(true);
                 }
-            }
+            });
         }
     }
 }

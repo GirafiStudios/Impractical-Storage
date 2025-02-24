@@ -19,14 +19,6 @@ public class BlockEntityCore extends BlockEntity {
         super(blockEntityType, pos, state);
     }
 
-    public void markDirtyAndNotify() {
-        if (this.level != null) {
-            BlockPos pos = getBlockPos();
-            BlockState state = this.level.getBlockState(pos);
-            this.level.markAndNotifyBlock(pos, this.level.getChunkAt(pos), state, state, 2, 512);
-        }
-    }
-
     @Nullable
     @Override
     public Packet<ClientGamePacketListener> getUpdatePacket() {

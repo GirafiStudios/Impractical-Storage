@@ -25,11 +25,9 @@ public class ControllerInterfaceBlockEntity extends BlockEntityCore {
     public void registerController(ControllerBlockEntity tile) {
         if (selectedControllerPos == null) {
             selectedControllerPos = tile.getBlockPos();
-            System.out.println("Set controller from interface");
             setState(ControllerInterfaceBlock.InterfaceState.ACTIVE);
         } else {
             if (selectedControllerPos != tile.getBlockPos()) {
-                System.out.println("clear controller from interface");
                 setState(ControllerInterfaceBlock.InterfaceState.ERROR);
             }
         }
@@ -42,9 +40,7 @@ public class ControllerInterfaceBlockEntity extends BlockEntityCore {
     }
 
     private ControllerBlockEntity getController() {
-        if (selectedControllerPos == null || selectedControllerPos == BlockPos.ZERO) return null;
-
-        System.out.println("beep");
+        if (selectedControllerPos == null || selectedControllerPos == BlockPos.ZERO || this.level == null) return null;
 
         BlockState state = this.level.getBlockState(getBlockPos());
 
@@ -54,29 +50,22 @@ public class ControllerInterfaceBlockEntity extends BlockEntityCore {
         BlockEntity blockEntity = this.level.getBlockEntity(selectedControllerPos);
         if (!(blockEntity instanceof ControllerBlockEntity)) return null;
 
-        System.out.println("getController");
-
         return (ControllerBlockEntity) blockEntity;
     }
 
     @Override
     public void saveAdditional(@Nonnull CompoundTag tag) {
-        System.out.println("write");
         super.saveAdditional(tag);
         if (selectedControllerPos != null) {
-            System.out.println("write: " + selectedControllerPos);
             tag.putLong("selectedPos", selectedControllerPos.asLong());
         }
     }
 
     @Override
     public void load(@Nonnull CompoundTag tag) {
-        System.out.println("Read");
         super.load(tag);
         if (tag.contains("selectedPos")) {
-            System.out.println("selectedPos before: " + this.selectedControllerPos);
             selectedControllerPos = BlockPos.of(tag.getLong("selectedPos"));
-            System.out.println("selectedPos after: " + this.selectedControllerPos);
         }
     }
 

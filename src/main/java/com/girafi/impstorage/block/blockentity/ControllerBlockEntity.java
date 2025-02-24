@@ -30,6 +30,7 @@ import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.ItemHandlerHelper;
+import net.minecraftforge.items.ItemStackHandler;
 import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nonnull;
@@ -66,12 +67,11 @@ public class ControllerBlockEntity extends BlockEntityCore {
 
     public static boolean INVENTORY_BLOCK = false;
 
-    public static class ItemHandler implements IItemHandler {
+    public static class ItemHandler extends ItemStackHandler {
         private final ControllerBlockEntity controller;
 
         private ItemHandler(ControllerBlockEntity controller) {
             this.controller = controller;
-            System.out.println("ItemHandler");
         }
 
         @Override
@@ -104,7 +104,6 @@ public class ControllerBlockEntity extends BlockEntityCore {
                         ItemStack copy = stack.copy();
                         copy.grow(stackInSlot.getCount());
                         this.controller.setInventorySlotContents(slot, copy, false, true, true);
-                        this.controller.markDirtyAndNotify();
                     }
 
                     return ItemStack.EMPTY;
@@ -115,7 +114,6 @@ public class ControllerBlockEntity extends BlockEntityCore {
                         ItemStack copy = stack.split(m);
                         copy.grow(stackInSlot.getCount());
                         this.controller.setInventorySlotContents(slot, copy, false, true, true);
-                        this.controller.markDirtyAndNotify();
                         return stack;
                     } else {
                         stack.shrink(m);
@@ -129,7 +127,6 @@ public class ControllerBlockEntity extends BlockEntityCore {
                     stack = stack.copy();
                     if (!simulate) {
                         this.controller.setInventorySlotContents(slot, stack.split(m), false, true, true);
-                        this.controller.markDirtyAndNotify();
                     } else {
                         stack.shrink(m);
                     }
@@ -137,7 +134,6 @@ public class ControllerBlockEntity extends BlockEntityCore {
                 } else {
                     if (!simulate) {
                         this.controller.setInventorySlotContents(slot, stack, false, true, true);
-                        this.controller.markDirtyAndNotify();
                     }
                     return ItemStack.EMPTY;
                 }
@@ -166,20 +162,9 @@ public class ControllerBlockEntity extends BlockEntityCore {
                 ItemStack decr = old.split(m);
 
                 this.controller.setInventorySlotContents(slot, old, true, true, true);
-                this.controller.markDirtyAndNotify();
 
                 return decr;
             }
-        }
-
-        @Override
-        public int getSlotLimit(int slot) {
-            return 64;
-        }
-
-        @Override
-        public boolean isItemValid(int slot, @NotNull ItemStack stack) {
-            return true;
         }
     }
 
@@ -227,173 +212,183 @@ public class ControllerBlockEntity extends BlockEntityCore {
     private int blockQueueTickCounter = 0;
 
     protected ItemHandler createItemHandler() {
-        return new ItemHandler(this);
+        return new ItemHandler(this) {
+            @Override
+            protected void onContentsChanged(int slot) {
+                setChanged();
+            }
+        };
     }
 
     @Override
-    public void saveAdditional(@Nonnull CompoundTag compound) {
-        super.saveAdditional(compound);
-        if (isReady()) {
-            compound.putLong("origin", origin.asLong());
-            compound.putLong("end", end.asLong());
+    public void saveAdditional(@Nonnull CompoundTag tag) {
+        super.saveAdditional(tag);
 
-            compound.putInt("rawX", rawX);
-            compound.putInt("rawY", rawY);
-            compound.putInt("rawZ", rawZ);
+        System.out.println("saveAdditional");
+        tag.putLong("origin", origin.asLong());
+        tag.putLong("end", end.asLong());
 
-            compound.putLong("offset", offset.asLong());
+        System.out.println("Put rawX: " + rawX);
 
-            compound.putInt("height", height);
-            compound.putInt("xLength", xLength);
-            compound.putInt("zLength", zLength);
+        tag.putInt("rawX", rawX);
+        tag.putInt("rawY", rawY);
+        tag.putInt("rawZ", rawZ);
 
-            compound.putBoolean("isEmpty", isInventoryEmpty());
+        tag.putLong("offset", offset.asLong());
 
-            compound.putInt("sortingType", sortingType.ordinal());
+        tag.putInt("height", height);
+        tag.putInt("xLength", xLength);
+        tag.putInt("zLength", zLength);
 
-            compound.putBoolean("shouldShiftInventory", shouldShiftInventory);
+        tag.putBoolean("isEmpty", isInventoryEmpty());
 
-            ListTag nbt_slotToWorldMap = new ListTag();
-            for (long l : slotToWorldMap) {
-                nbt_slotToWorldMap.add(LongTag.valueOf(l));
-            }
-            compound.put("slotToWorldMap", nbt_slotToWorldMap);
+        tag.putInt("sortingType", sortingType.ordinal());
 
-            ListTag nbt_worldToSlotMap = new ListTag();
-            for (int y = 0; y < height; y++) {
-                for (int x = 0; x < xLength; x++) {
-                    for (int z = 0; z < zLength; z++) {
-                        int slot = worldToSlotMap[y][x][z];
-                        if (slot != -1) {
-                            CompoundTag tag = new CompoundTag();
+        tag.putBoolean("shouldShiftInventory", shouldShiftInventory);
 
-                            tag.putInt("_x", x);
-                            tag.putInt("_y", y);
-                            tag.putInt("_z", z);
-                            tag.putInt("slot", slot);
-
-                            nbt_worldToSlotMap.add(tag);
-                        }
-                    }
-                }
-            }
-            compound.put("worldToSlotMap", nbt_worldToSlotMap);
-
-            ListTag nbt_worldOcclusionMap = new ListTag();
-            for (int y = 0; y < height; y++) {
-                for (int x = 0; x < xLength; x++) {
-                    for (int z = 0; z < zLength; z++) {
-                        if (worldOcclusionMap[y][x][z]) {
-                            CompoundTag tag = new CompoundTag();
-
-                            tag.putInt("_x", x);
-                            tag.putInt("_y", y);
-                            tag.putInt("_z", z);
-
-                            nbt_worldOcclusionMap.add(tag);
-                        }
-                    }
-                }
-            }
-            compound.put("worldOcclusionMap", nbt_worldOcclusionMap);
-
-            CompoundTag inv = new CompoundTag();
-            ContainerHelper.saveAllItems(inv, inventory);
-            compound.put("inventory", inv);
-
-            // Block Queue
-            ListTag nbt_blockQueue = new ListTag();
-            for (QueueElement element : blockQueue) {
-                CompoundTag tag = new CompoundTag();
-
-                tag.putInt("slot", element.slot);
-
-                CompoundTag item = new CompoundTag();
-                element.itemStack.save(item);
-                tag.put("stack", item);
-
-                nbt_blockQueue.add(tag);
-            }
-            compound.put("blockQueue", nbt_blockQueue);
-
-            compound.putInt("blockQueueCounter", blockQueueTickCounter);
+        ListTag nbt_slotToWorldMap = new ListTag();
+        for (long l : slotToWorldMap) {
+            nbt_slotToWorldMap.add(LongTag.valueOf(l));
         }
+        tag.put("slotToWorldMap", nbt_slotToWorldMap);
+
+        ListTag nbt_worldToSlotMap = new ListTag();
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < xLength; x++) {
+                for (int z = 0; z < zLength; z++) {
+                    int slot = worldToSlotMap[y][x][z];
+                    if (slot != -1) {
+                        CompoundTag tagRaw = new CompoundTag();
+
+                        tagRaw.putInt("_x", x);
+                        tagRaw.putInt("_y", y);
+                        tagRaw.putInt("_z", z);
+                        tagRaw.putInt("slot", slot);
+
+                        nbt_worldToSlotMap.add(tagRaw);
+                    }
+                }
+            }
+        }
+        tag.put("worldToSlotMap", nbt_worldToSlotMap);
+
+        ListTag nbt_worldOcclusionMap = new ListTag();
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < xLength; x++) {
+                for (int z = 0; z < zLength; z++) {
+                    if (worldOcclusionMap[y][x][z]) {
+                        CompoundTag tagworldOcclusionMap = new CompoundTag();
+
+                        tagworldOcclusionMap.putInt("_x", x);
+                        tagworldOcclusionMap.putInt("_y", y);
+                        tagworldOcclusionMap.putInt("_z", z);
+
+                        nbt_worldOcclusionMap.add(tagworldOcclusionMap);
+                    }
+                }
+            }
+        }
+        tag.put("worldOcclusionMap", nbt_worldOcclusionMap);
+
+        CompoundTag inv = new CompoundTag();
+        ContainerHelper.saveAllItems(inv, inventory);
+        tag.put("inventory", inv);
+
+        // Block Queue
+        ListTag nbt_blockQueue = new ListTag();
+        for (QueueElement element : blockQueue) {
+            CompoundTag tagBlockQueue = new CompoundTag();
+
+            tagBlockQueue.putInt("slot", element.slot);
+
+            CompoundTag item = new CompoundTag();
+            element.itemStack.save(item);
+            tagBlockQueue.put("stack", item);
+
+            nbt_blockQueue.add(tagBlockQueue);
+        }
+        tag.put("blockQueue", nbt_blockQueue);
+
+        tag.putInt("blockQueueCounter", blockQueueTickCounter);
     }
 
     @Override
-    public void load(CompoundTag compound) {
-        super.load(compound);
-        System.out.println("read");
-        if (compound.contains("origin") && compound.contains("end")) {
-            System.out.println("Origin before: " + origin);
-            origin = BlockPos.of(compound.getLong("origin"));
-            System.out.println("Origin after: " + origin);
-            end = BlockPos.of(compound.getLong("end"));
+    public void load(@Nonnull CompoundTag tag) {
+        super.load(tag);
+        if (tag.contains("origin") && tag.contains("end")) {
+            System.out.println("load");
+            origin = BlockPos.of(tag.getLong("origin"));
 
-            rawX = compound.getInt("rawX");
-            rawY = compound.getInt("rawY");
-            rawZ = compound.getInt("rawZ");
+            end = BlockPos.of(tag.getLong("end"));
 
-            offset = BlockPos.of(compound.getLong("offset"));
+            System.out.println("tag rawX: " + tag.getInt("rawX"));
 
-            height = compound.getInt("height");
-            xLength = compound.getInt("xLength");
-            zLength = compound.getInt("zLength");
+            System.out.println("rawX before: " + this.rawX);
+            rawX = tag.getInt("rawX");
+            System.out.println("rawX after: " + this.rawX);
+            rawY = tag.getInt("rawY");
+            rawZ = tag.getInt("rawZ");
+
+            offset = BlockPos.of(tag.getLong("offset"));
+
+            height = tag.getInt("height");
+            xLength = tag.getInt("xLength");
+            zLength = tag.getInt("zLength");
             totalSize = height * xLength * zLength;
 
-            isEmpty = compound.getBoolean("isEmpty");
+            isEmpty = tag.getBoolean("isEmpty");
 
-            sortingType = SortingType.VALUES[compound.getInt("sortingType")];
+            sortingType = SortingType.VALUES[tag.getInt("sortingType")];
 
-            shouldShiftInventory = compound.getBoolean("shouldShiftInventory");
+            shouldShiftInventory = tag.getBoolean("shouldShiftInventory");
 
             inventory = NonNullList.withSize(totalSize, ItemStack.EMPTY);
 
             slotToWorldMap = new long[totalSize];
-            ListTag nbt_slotToWorldMap = compound.getList("slotToWorldMap", 4);
+            ListTag nbt_slotToWorldMap = tag.getList("slotToWorldMap", 4);
             for (int i = 0; i < nbt_slotToWorldMap.size(); i++) {
                 slotToWorldMap[i] = ((LongTag) nbt_slotToWorldMap.get(i)).getAsLong();
             }
 
             worldToSlotMap = new int[height][xLength][zLength];
-            ListTag nbt_worldToSlotMap = compound.getList("worldToSlotMap", 10);
+            ListTag nbt_worldToSlotMap = tag.getList("worldToSlotMap", 10);
             for (int i = 0; i < nbt_worldToSlotMap.size(); i++) {
-                CompoundTag tag = nbt_worldToSlotMap.getCompound(i);
+                CompoundTag tagworldToSlotMap = nbt_worldToSlotMap.getCompound(i);
 
-                int x = tag.getInt("_x");
-                int y = tag.getInt("_y");
-                int z = tag.getInt("_z");
-                int slot = tag.getInt("slot");
+                int x = tagworldToSlotMap.getInt("_x");
+                int y = tagworldToSlotMap.getInt("_y");
+                int z = tagworldToSlotMap.getInt("_z");
+                int slot = tagworldToSlotMap.getInt("slot");
 
                 worldToSlotMap[y][x][z] = slot;
             }
 
             worldOcclusionMap = new boolean[height][xLength][zLength];
-            ListTag nbt_worldOcclusionMap = compound.getList("worldOcclusionMap", 10);
+            ListTag nbt_worldOcclusionMap = tag.getList("worldOcclusionMap", 10);
             for (int i = 0; i < nbt_worldOcclusionMap.size(); i++) {
-                CompoundTag tag = nbt_worldOcclusionMap.getCompound(i);
+                CompoundTag tagOcclusionMap = nbt_worldOcclusionMap.getCompound(i);
 
-                int x = tag.getInt("_x");
-                int y = tag.getInt("_y");
-                int z = tag.getInt("_z");
+                int x = tagOcclusionMap.getInt("_x");
+                int y = tagOcclusionMap.getInt("_y");
+                int z = tagOcclusionMap.getInt("_z");
 
                 worldOcclusionMap[y][x][z] = true;
             }
 
-            CompoundTag inv = compound.getCompound("inventory");
+            CompoundTag inv = tag.getCompound("inventory");
             ContainerHelper.loadAllItems(inv, inventory);
 
             // Block Queue
-            ListTag nbt_blockQueue = compound.getList("blockQueue", 10);
+            ListTag nbt_blockQueue = tag.getList("blockQueue", 10);
             for (int i = 0; i < nbt_blockQueue.size(); i++) {
-                CompoundTag tag = nbt_blockQueue.getCompound(i);
+                CompoundTag tagBlockQueue = nbt_blockQueue.getCompound(i);
                 QueueElement element = new QueueElement();
-                element.slot = tag.getInt("slot");
-                element.itemStack = ItemStack.of(tag.getCompound("stack"));
+                element.slot = tagBlockQueue.getInt("slot");
+                element.itemStack = ItemStack.of(tagBlockQueue.getCompound("stack"));
                 blockQueue.add(element);
             }
 
-            blockQueueTickCounter = compound.getInt("blockQueueCounter");
+            blockQueueTickCounter = tag.getInt("blockQueueCounter");
         }
     }
 

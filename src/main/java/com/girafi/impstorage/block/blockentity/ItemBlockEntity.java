@@ -61,7 +61,7 @@ public class ItemBlockEntity extends BlockEntityCore {
         ControllerBlockEntity controller = getController();
         if (controller != null) {
             this.stack = force.isEmpty() ? controller.getStackForPosition(getBlockPos()) : force;
-            this.markDirtyAndNotify();
+            this.setChanged();
         }
     }
 
