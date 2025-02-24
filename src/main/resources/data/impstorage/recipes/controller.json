@@ -1,25 +1,23 @@
 {
-  "result": {
-    "item": "impstorage:controller",
-    "count": 1
-  },
+  "type": "minecraft:crafting_shaped",
   "pattern": [
     " I ",
     " C ",
     " D "
   ],
-  "type": "forge:ore_shaped",
   "key": {
     "I": {
-      "type": "forge:ore_dict",
-      "ore": "ingotIron"
+      "tag": "forge:ingots/iron"
     },
     "C": {
-      "type": "forge:ore_dict",
-      "ore": "chest"
+      "tag": "forge:chests"
     },
     "D": {
       "item": "minecraft:dispenser"
     }
+  },
+  "result": {
+    "item": "impstorage:controller",
+    "count": 1
   }
 }

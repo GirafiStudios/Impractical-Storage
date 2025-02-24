@@ -1,25 +1,22 @@
 {
-  "result": {
-    "item": "impstorage:conveyor",
-    "count": 1
-  },
+  "type": "minecraft:crafting_shaped",
   "pattern": [
     " D ",
     "IRI"
   ],
-  "type": "forge:ore_shaped",
   "key": {
     "D": {
-      "type": "forge:ore_dict",
-      "ore": "dyeBlack"
+      "tag": "forge:dyes/black"
     },
     "I": {
-      "type": "forge:ore_dict",
-      "ore": "ingotIron"
+      "tag": "forge:ingots/iron"
     },
     "R": {
-      "type": "forge:ore_dict",
-      "ore": "dustRedstone"
+      "tag": "forge:dusts/redstone"
     }
+  },
+  "result": {
+    "item": "impstorage:conveyor",
+    "count": 1
   }
 }

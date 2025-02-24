@@ -23,7 +23,7 @@ public class CrateBlock extends Block {
     }
 
     public CrateBlock(int blockStorage, int itemStorage) {
-        super(Block.Properties.of().mapColor(MapColor.WOOD).instrument(NoteBlockInstrument.BASS).strength(2.0F, 2.0F).sound(SoundType.WOOD));
+        super(Block.Properties.of().mapColor(MapColor.WOOD).instrument(NoteBlockInstrument.BASS).strength(2.0F, 3.0F).sound(SoundType.WOOD));
         this.blockStorage = blockStorage;
         this.itemStorage = itemStorage;
     }

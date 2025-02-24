@@ -1,0 +1,10 @@
+{
+  "replace": false,
+  "values": [
+    "impstorage:wood_crate",
+    "impstorage:iron_crate",
+    "impstorage:gold_crate",
+    "impstorage:diamond_crate",
+    "impstorage:obsidian_crate"
+  ]
+}

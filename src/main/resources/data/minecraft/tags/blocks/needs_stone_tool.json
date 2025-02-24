@@ -1,0 +1,10 @@
+{
+  "replace": false,
+  "values": [
+    "impstorage:controller",
+    "impstorage:controller_interface",
+    "impstorage:conveyor",
+    "impstorage:itemizer",
+    "impstorage:gravity_inducer"
+  ]
+}
