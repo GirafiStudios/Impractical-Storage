@@ -4,9 +4,10 @@ import com.girafi.impstorage.block.ControllerBlock;
 import com.girafi.impstorage.block.blockentity.ControllerBlockEntity;
 import com.girafi.impstorage.lib.data.SortingType;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.world.level.Level;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.network.NetworkEvent;
@@ -71,39 +72,58 @@ public class SControllerConfig {
 
     public static class Handler {
         public static void handle(SControllerConfig message, Supplier<NetworkEvent.Context> ctx) {
-            Level level = Minecraft.getInstance().level;
             ctx.get().enqueueWork(() -> {
-                if (level != null) {
-                    BlockState state = level.getBlockState(message.destination);
-                    BlockEntity blockEntity = level.getBlockEntity(message.destination);
+                ClientLevel clientLevel = Minecraft.getInstance().level;
+                if (clientLevel != null) {
+                    BlockState state = clientLevel.getBlockState(message.destination);
+                    BlockEntity blockEntity = clientLevel.getBlockEntity(message.destination);
                     if (blockEntity instanceof ControllerBlockEntity controller) {
 
                         if (message.sort) {
                             controller.setSortingType(message.sortingType);
-                            System.out.println("Sort");
                         }
 
                         if (!controller.isInventoryEmpty()) {
-                            System.out.println("Return");
                             return;
                         }
 
                         if (message.dimensions) {
-                            System.out.println("Dimensions");
                             controller.updateRawBounds(state.getValue(ControllerBlock.FACING), message.boundX, message.boundY, message.boundZ);
                         }
 
                         if (message.offset) {
-                            System.out.println("Offset");
                             controller.updateOffset(message.offsetX, message.offsetY, message.offsetZ);
                         }
-
                         controller.setChanged();
-                        System.out.println("setChanged");
-                        ctx.get().setPacketHandled(true);
                     }
                 }
             });
+
+            ctx.get().enqueueWork(() -> {
+                ServerLevel level = ctx.get().getSender().serverLevel();
+                BlockState state = level.getBlockState(message.destination);
+                BlockEntity blockEntity = level.getBlockEntity(message.destination);
+                if (blockEntity instanceof ControllerBlockEntity controller) {
+
+                    if (message.sort) {
+                        controller.setSortingType(message.sortingType);
+                    }
+
+                    if (!controller.isInventoryEmpty()) {
+                        return;
+                    }
+
+                    if (message.dimensions) {
+                        controller.updateRawBounds(state.getValue(ControllerBlock.FACING), message.boundX, message.boundY, message.boundZ);
+                    }
+
+                    if (message.offset) {
+                        controller.updateOffset(message.offsetX, message.offsetY, message.offsetZ);
+                    }
+                    controller.setChanged();
+                }
+            });
+            ctx.get().setPacketHandled(true);
         }
     }
 }

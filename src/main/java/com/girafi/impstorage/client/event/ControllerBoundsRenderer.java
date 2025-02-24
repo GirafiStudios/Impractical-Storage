@@ -1,108 +1,125 @@
 package com.girafi.impstorage.client.event;
 
 import com.girafi.impstorage.block.blockentity.ControllerBlockEntity;
+import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
+import com.mojang.math.Axis;
+import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.core.BlockPos;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.level.ChunkPos;
+import net.minecraft.util.FastColor;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.client.event.RenderLevelStageEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
+import org.joml.Matrix3f;
+import org.joml.Matrix4f;
 
 import java.util.ArrayDeque;
 
 public class ControllerBoundsRenderer {
+    private static final int CELL_BORDER = FastColor.ARGB32.color(255, 0, 155, 155);
+    private static final int YELLOW = FastColor.ARGB32.color(255, 255, 255, 0);
 
     @OnlyIn(Dist.CLIENT)
     @SubscribeEvent
     public static void renderBorder(RenderLevelStageEvent event) {
         if (event.getStage() == RenderLevelStageEvent.Stage.AFTER_LEVEL) { //TODO Check if this works
             Minecraft mc = Minecraft.getInstance();
-            if (mc.cameraEntity == null) {
-                return;
-            }
-            PoseStack poseStack = event.getPoseStack();
-            MultiBufferSource buffer = mc.renderBuffers().bufferSource();
-            VertexConsumer vertexConsumer = buffer.getBuffer(RenderType.lines());
+            Level level = mc.level;
 
-            poseStack.pushPose();
-            //GlStateManager.disableTexture2D();
-            //GL11.glPushAttrib(GL11.GL_LIGHTING_BIT);
-            //GlStateManager.disableLighting();
-            //GlStateManager.enableBlend();
-            //GlStateManager.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
 
-            Entity entity = mc.cameraEntity;
+            if (level != null) {
+                Camera camera = mc.getBlockEntityRenderDispatcher().camera;
 
-            /*double posX = entity.lastTickPosX + (entity.posX - entity.lastTickPosX) * event.getPartialTick(); //TODO Is this part needed?
-            double posY = entity.lastTickPosY + (entity.posY - entity.lastTickPosY) * event.getPartialTick();
-            double posZ = entity.lastTickPosZ + (entity.posZ - entity.lastTickPosZ) * event.getPartialTick();
+                PoseStack poseStack = event.getPoseStack();
+                MultiBufferSource buffer = mc.renderBuffers().bufferSource();
+                VertexConsumer vertexConsumer = buffer.getBuffer(RenderType.lineStrip());
 
-            poseStack.translate(-posX, -posY, -posZ);*/
-            //GlStateManager.glLineWidth(2.5F);
+                poseStack.pushPose();
 
-            Level level = entity.level();
-            int x1 = (int) entity.getX();
-            int z1 = (int) entity.getZ();
+                ArrayDeque<BlockPos[]> boxes = new ArrayDeque<>();
+                for (int c = 0; c < 9; ++c) {
+                    for (BlockEntity obj : level.getChunkAt(camera.getBlockPosition()).getBlockEntities().values()) {
+                        if (obj instanceof ControllerBlockEntity controller) {
+                            if (controller.isReady() && controller.showBounds) {
+                                BlockPos[] pair = new BlockPos[3];
+                                pair[0] = controller.origin;
+                                pair[1] = controller.origin.offset(controller.xLength, controller.height, controller.zLength);
+                                pair[2] = controller.getBlockPos();
 
-            LevelChunk[] chunks = new LevelChunk[9];
-            ChunkPos chunkPos = entity.chunkPosition();
-
-            chunks[4] = level.getChunkAt(new BlockPos(x1, 1, z1));
-            int cX = chunkPos.x; //TODO Not sure if this works
-            int cZ = chunkPos.z; //TODO Not sure if this works
-
-            chunks[0] = level.getChunk(cX - 1, cZ - 1);
-            chunks[1] = level.getChunk(cX, cZ - 1);
-            chunks[2] = level.getChunk(cX + 1, cZ - 1);
-
-            chunks[3] = level.getChunk(cX - 1, cZ);
-            chunks[5] = level.getChunk(cX + 1, cZ);
-
-            chunks[6] = level.getChunk(cX - 1, cZ + 1);
-            chunks[7] = level.getChunk(cX, cZ + 1);
-            chunks[8] = level.getChunk(cX + 1, cZ + 1);
-
-            ArrayDeque<BlockPos[]> boxes = new ArrayDeque<>();
-            for (int c = 0; c < 9; ++c) {
-                for (BlockEntity obj : chunks[c].getBlockEntities().values()) {
-                    if (obj instanceof ControllerBlockEntity controller) {
-                        if (controller.isReady() && controller.showBounds) {
-                            BlockPos[] pair = new BlockPos[2];
-                            pair[0] = controller.origin;
-                            pair[1] = controller.origin.offset(controller.xLength, controller.height, controller.zLength);
-                            boxes.add(pair);
-                            System.out.println("Add");
+                                boxes.add(pair);
+                            } else {
+                                return;
+                            }
                         }
                     }
                 }
+
+                BlockPos[] renderPair;
+                while (!boxes.isEmpty()) {
+                    renderPair = boxes.pop();
+
+                    BlockPos origin = renderPair[0];
+                    BlockPos originOffset = renderPair[1];
+                    BlockPos controllerPos = renderPair[2];
+
+
+                    poseStack.translate(-controllerPos.getX(), -controllerPos.getY(), -controllerPos.getZ()); //TODO Fix translation
+
+                    LevelRenderer.renderLineBox(poseStack, vertexConsumer, origin.getX(), origin.getY(), origin.getZ(), originOffset.getX(), originOffset.getY(), originOffset.getZ(), 1, 1, 1, 1);
+                }
+
+                poseStack.translate(0, 0, 0);
+
+                poseStack.popPose();
             }
-
-            BlockPos[] renderPair;
-            while (!boxes.isEmpty()) {
-                renderPair = boxes.pop();
-
-                BlockPos start = renderPair[0];
-                BlockPos end = renderPair[1];
-                System.out.println("Test");
-
-                LevelRenderer.renderLineBox(poseStack, vertexConsumer, start.getX(), start.getY(), start.getZ(), end.getX(), end.getY(), end.getZ(), 1, 1, 1, 1);
-            }
-
-            //GlStateManager.enableTexture2D();
-            //GlStateManager.enableLighting();
-            //GlStateManager.disableBlend();
-            //GL11.glPopAttrib();
-            poseStack.popPose();
         }
+    }
+
+    private static void renderPing(double px, double py, double pz, PoseStack poseStack, Camera camera) {
+        Minecraft mc = Minecraft.getInstance();
+        poseStack.pushPose();
+        poseStack.translate(px, py, pz);
+
+        PoseStack.Pose matrixEntry = poseStack.last();
+        Matrix4f matrix4f = matrixEntry.pose();
+        MultiBufferSource.BufferSource buffer = mc.renderBuffers().bufferSource();
+        VertexConsumer vertexBuilder = buffer.getBuffer(RenderType.debugLineStrip(1.0F));
+        RenderSystem.setShader(GameRenderer::getPositionTexColorShader);
+
+        System.out.println("Test");
+
+        float min = -0.25F - (0.25F * (float) 20 / 20F);
+        float max = 0.25F + (0.25F * (float) 20 / 20F);
+
+        int x = 32 * 1;
+        int y = 0;
+        float f = (float) (0.009999999776482582D / (double) 256);
+        float f1 = (float) (0.009999999776482582D / (double) 256);
+        float minU = (float) x / (float) ((double) 256) + f;
+        float maxU = (float) (x + 32) / (float) ((double) 256) - f;
+        float minV = (float) y / (float) 256 + f1;
+        float maxV = (float) (y + 32) / (float) 256 - f1;
+
+        // Block Overlay Background
+        renderPosTexColorNoZ(vertexBuilder, matrix4f, min, max, minU, maxV, 150, 150, 150, 255);
+        renderPosTexColorNoZ(vertexBuilder, matrix4f, max, max, maxU, maxV, 150, 150, 150, 255);
+        renderPosTexColorNoZ(vertexBuilder, matrix4f, max, min, maxU, minV, 150, 150, 150, 255);
+        renderPosTexColorNoZ(vertexBuilder, matrix4f, min, min, minU, minV, 150, 150, 150, 255);
+
+        poseStack.popPose();
+    }
+
+    public static void renderPosTexColorNoZ(VertexConsumer builder, Matrix4f matrix4f, float x, float y, float u, float v, float r, float g, float b, float a) {
+        builder.vertex(matrix4f, x, y, 0).uv(u, v).color(r, g, b, a).endVertex();
     }
 }

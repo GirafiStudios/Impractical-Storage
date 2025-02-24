@@ -228,8 +228,6 @@ public class ControllerBlockEntity extends BlockEntityCore {
         tag.putLong("origin", origin.asLong());
         tag.putLong("end", end.asLong());
 
-        System.out.println("Put rawX: " + rawX);
-
         tag.putInt("rawX", rawX);
         tag.putInt("rawY", rawY);
         tag.putInt("rawZ", rawZ);
@@ -316,16 +314,9 @@ public class ControllerBlockEntity extends BlockEntityCore {
     public void load(@Nonnull CompoundTag tag) {
         super.load(tag);
         if (tag.contains("origin") && tag.contains("end")) {
-            System.out.println("load");
             origin = BlockPos.of(tag.getLong("origin"));
-
             end = BlockPos.of(tag.getLong("end"));
-
-            System.out.println("tag rawX: " + tag.getInt("rawX"));
-
-            System.out.println("rawX before: " + this.rawX);
             rawX = tag.getInt("rawX");
-            System.out.println("rawX after: " + this.rawX);
             rawY = tag.getInt("rawY");
             rawZ = tag.getInt("rawZ");
 
@@ -411,7 +402,6 @@ public class ControllerBlockEntity extends BlockEntityCore {
         if (controller.origin == BlockPos.ZERO || controller.end == BlockPos.ZERO) {
             return;
         }
-
         if (controller.shouldShiftInventory) {
             controller.shiftInventory();
             controller.shouldShiftInventory = false;
@@ -561,14 +551,12 @@ public class ControllerBlockEntity extends BlockEntityCore {
 
         // Clear everything old
         if (clear) {
-            System.out.println("clear");
             for (int y = 0; y < height; y++) {
                 for (int z = 0; z < zLength; z++) {
                     for (int x = 0; x < xLength; x++) {
                         BlockPos pos = oldOrigin.offset(x, y, z);
                         BlockState state = level.getBlockState(pos);
                         if (state.getBlock() == ModBlocks.ITEM_BLOCK.get()) {
-                            System.out.println("Clear old item block");
                             level.setBlock(pos, Blocks.AIR.defaultBlockState(), 2);
                         }
                     }

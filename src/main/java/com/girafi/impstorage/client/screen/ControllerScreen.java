@@ -8,9 +8,7 @@ import com.girafi.impstorage.lib.data.SortingType;
 import com.girafi.impstorage.network.PacketHandler;
 import com.girafi.impstorage.network.packet.SControllerConfig;
 import com.google.common.base.Predicate;
-import com.mojang.blaze3d.platform.InputConstants;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
@@ -100,11 +98,11 @@ public class ControllerScreen extends Screen {
         this.guiTop = (this.height - GUI_HEIGHT) / 2;
 
         addRenderableWidget(new ExtendedButton(guiLeft + 8, guiTop + 164, 101, 16,
-                TEXT_SHOW_BOUNDS, (button) -> {
+                this.showBounds ? TEXT_HIDE_BOUNDS : TEXT_SHOW_BOUNDS, (button) -> {
 
-            System.out.println(this.controllerBlockEntity.showBounds);
-            update(this.x, this.y, this.z, this.offX, this.offY, this.offZ, !this.controllerBlockEntity.showBounds, this.sortingType);
-            button.setMessage(this.controllerBlockEntity.showBounds ? TEXT_HIDE_BOUNDS : TEXT_SHOW_BOUNDS);
+            update(this.x, this.y, this.z, this.offX, this.offY, this.offZ, !this.showBounds, this.sortingType);
+            this.controllerBlockEntity.showBounds = !this.controllerBlockEntity.showBounds;
+            button.setMessage(this.showBounds ? TEXT_HIDE_BOUNDS : TEXT_SHOW_BOUNDS);
         }));
 
         addRenderableWidget(new ExtendedButton(guiLeft + 8, guiTop + 184, 101, 16,
@@ -250,7 +248,6 @@ public class ControllerScreen extends Screen {
         SortingType sortingType = SortingType.ROWS;
 
         if (ox != nx || oy != ny || oz != nz) {
-            System.out.println("Dimensions set to true");
             dimensions = true;
             boundX = nx;
             boundY = ny;

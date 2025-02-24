@@ -3,18 +3,20 @@ package com.girafi.impstorage.network;
 import com.girafi.impstorage.lib.ModInfo;
 import com.girafi.impstorage.network.packet.SControllerConfig;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraftforge.network.NetworkDirection;
 import net.minecraftforge.network.NetworkRegistry;
 import net.minecraftforge.network.simple.SimpleChannel;
 
 public class PacketHandler {
+    private static final String PROTOCOL_VERSION = "1.0";
     public static final SimpleChannel CHANNEL = NetworkRegistry.ChannelBuilder
             .named(new ResourceLocation(ModInfo.ID, "impractical_channel"))
-            .clientAcceptedVersions(v -> true)
-            .serverAcceptedVersions(v -> true)
-            .networkProtocolVersion(() -> "IMPSTORAGE1")
+            .clientAcceptedVersions(PROTOCOL_VERSION::equals)
+            .serverAcceptedVersions(PROTOCOL_VERSION::equals)
+            .networkProtocolVersion(() -> PROTOCOL_VERSION)
             .simpleChannel();
 
     public static void initialize() {
-        CHANNEL.registerMessage(0, SControllerConfig.class, SControllerConfig::encode, SControllerConfig::decode, SControllerConfig.Handler::handle);
+        CHANNEL.messageBuilder(SControllerConfig.class, 0, NetworkDirection.PLAY_TO_SERVER).encoder(SControllerConfig::encode).decoder(SControllerConfig::decode).consumerNetworkThread(SControllerConfig.Handler::handle).add();
     }
 }
