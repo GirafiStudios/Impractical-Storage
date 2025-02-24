@@ -101,9 +101,10 @@ public class ControllerScreen extends Screen {
 
         addRenderableWidget(new ExtendedButton(guiLeft + 8, guiTop + 164, 101, 16,
                 TEXT_SHOW_BOUNDS, (button) -> {
-            update(this.x, this.y, this.z, this.offX, this.offY, this.offZ, !this.showBounds, this.sortingType);
 
-            button.setMessage(this.showBounds ? TEXT_HIDE_BOUNDS : TEXT_SHOW_BOUNDS);
+            System.out.println(this.controllerBlockEntity.showBounds);
+            update(this.x, this.y, this.z, this.offX, this.offY, this.offZ, !this.controllerBlockEntity.showBounds, this.sortingType);
+            button.setMessage(this.controllerBlockEntity.showBounds ? TEXT_HIDE_BOUNDS : TEXT_SHOW_BOUNDS);
         }));
 
         addRenderableWidget(new ExtendedButton(guiLeft + 8, guiTop + 184, 101, 16,

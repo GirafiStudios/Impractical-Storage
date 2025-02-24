@@ -1,6 +1,7 @@
 package com.girafi.impstorage.block.blockentity;
 
 import com.girafi.impstorage.block.ControllerBlock;
+import com.girafi.impstorage.block.ControllerInterfaceBlock;
 import com.girafi.impstorage.block.PhantomBlock;
 import com.girafi.impstorage.core.BlockOverrides;
 import com.girafi.impstorage.init.ModBlockEntities;
@@ -192,8 +193,8 @@ public class ControllerBlockEntity extends BlockEntityCore {
     public LazyOptional<ItemHandler> itemHandler = LazyOptional.of(this::createItemHandler);
     public NonNullList<ItemStack> inventory = NonNullList.create();
 
-    public BlockPos origin = null;
-    public BlockPos end = null;
+    public BlockPos origin = BlockPos.ZERO;
+    public BlockPos end = BlockPos.ZERO;
 
     public int rawX = ImpracticalConfig.BOUNDS_OPTIONS.defaultX.get();
     public int rawY = ImpracticalConfig.BOUNDS_OPTIONS.defaultY.get();
@@ -404,10 +405,6 @@ public class ControllerBlockEntity extends BlockEntityCore {
         }
     }
 
-    public void setShowBounds(boolean showBounds) {
-        this.showBounds = showBounds;
-    }
-
     public void setSortingType(SortingType sortingType) {
         this.sortingType = sortingType;
         if (this.level != null) {
@@ -416,7 +413,7 @@ public class ControllerBlockEntity extends BlockEntityCore {
     }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, ControllerBlockEntity controller) {
-        if (controller.origin == null || controller.end == null) {
+        if (controller.origin == BlockPos.ZERO || controller.end == BlockPos.ZERO) {
             return;
         }
 
@@ -506,7 +503,7 @@ public class ControllerBlockEntity extends BlockEntityCore {
     }
 
     public boolean isReady() {
-        return origin != null && end != null;
+        return origin != BlockPos.ZERO && end != BlockPos.ZERO;
     }
 
     public void updateOffset(int x, int y, int z) {
@@ -557,7 +554,7 @@ public class ControllerBlockEntity extends BlockEntityCore {
     public void setBounds(BlockPos nOrigin, BlockPos nEnd) {
         INVENTORY_BLOCK = true;
 
-        boolean clear = this.origin != null && this.end != null;
+        boolean clear = this.origin != BlockPos.ZERO && this.end != BlockPos.ZERO;
         BlockPos oldOrigin = this.origin;
 
         NonNullList<ItemStack> currentInventory = NonNullList.create();
@@ -663,20 +660,39 @@ public class ControllerBlockEntity extends BlockEntityCore {
     public void onBlockBreak() {
         ItemBlockEntity.DROPS = false;
 
-        for (int i = 0; i < this.totalSize; i++) {
-            ItemStack stack = getStackInSlot(i);
-            if (!stack.isEmpty() && this.level != null) {
-                BlockPos pos = BlockPos.of(this.slotToWorldMap[i]).offset(this.origin);
-                BlockEntity blockEntity = this.level.getBlockEntity(pos);
+        if (this.level != null) {
+            for (int i = 0; i < this.totalSize; i++) {
+                ItemStack stack = getStackInSlot(i);
+                if (!stack.isEmpty()) {
+                    BlockPos pos = BlockPos.of(this.slotToWorldMap[i]).offset(this.origin);
+                    BlockEntity blockEntity = this.level.getBlockEntity(pos);
 
-                if (ImpracticalConfig.GENERAL_OPTIONS.dropBlocks.get()) {
-                    Containers.dropItemStack(this.level, pos.getX(), pos.getY(), pos.getZ(), stack);
-                    this.setBlock(i, ItemStack.EMPTY);
-                } else {
-                    if (blockEntity instanceof ItemBlockEntity) {
-                        Item item = getStackForPosition(pos).getItem();
-                        if (item instanceof BlockItem && !BlockOverrides.shouldTreatAsItem(item)) {
-                            this.level.setBlock(pos, Block.byItem(item).defaultBlockState(), 2);
+                    if (ImpracticalConfig.GENERAL_OPTIONS.dropBlocks.get()) {
+                        Containers.dropItemStack(this.level, pos.getX(), pos.getY(), pos.getZ(), stack);
+                        this.setBlock(i, ItemStack.EMPTY);
+                    } else {
+                        if (blockEntity instanceof ItemBlockEntity) {
+                            Item item = getStackForPosition(pos).getItem();
+                            if (item instanceof BlockItem && !BlockOverrides.shouldTreatAsItem(item)) {
+                                this.level.setBlock(pos, Block.byItem(item).defaultBlockState(), 2);
+                            }
+                        }
+                    }
+                }
+            }
+
+            //Unregister Controller Interface
+            for (int y = -1; y <= this.height; y++) {
+                for (int z = -1; z <= this.zLength; z++) {
+                    for (int x = -1; x <= this.xLength; x++) {
+                        if (y == -1 || y == this.height || z == -1 || z == this.zLength || x == -1 || x == this.xLength) {
+                            BlockPos originAdd = this.origin.offset(x, y, z);
+                            if (this.level.getBlockState(originAdd).getBlock() == ModBlocks.CONTROLLER_INTERFACE.get()) {
+                                ControllerInterfaceBlockEntity controllerInterface = (ControllerInterfaceBlockEntity) level.getBlockEntity(originAdd);
+                                if (controllerInterface != null) {
+                                    controllerInterface.setState(ControllerInterfaceBlock.InterfaceState.INACTIVE);
+                                }
+                            }
                         }
                     }
                 }

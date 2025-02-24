@@ -81,6 +81,7 @@ public class ControllerBoundsRenderer {
                             pair[0] = controller.origin;
                             pair[1] = controller.origin.offset(controller.xLength, controller.height, controller.zLength);
                             boxes.add(pair);
+                            System.out.println("Add");
                         }
                     }
                 }
@@ -92,6 +93,7 @@ public class ControllerBoundsRenderer {
 
                 BlockPos start = renderPair[0];
                 BlockPos end = renderPair[1];
+                System.out.println("Test");
 
                 LevelRenderer.renderLineBox(poseStack, vertexConsumer, start.getX(), start.getY(), start.getZ(), end.getX(), end.getY(), end.getZ(), 1, 1, 1, 1);
             }

@@ -35,7 +35,7 @@ public class ControllerInterfaceBlockEntity extends BlockEntityCore {
         }
     }
 
-    private void setState(ControllerInterfaceBlock.InterfaceState state) {
+    public void setState(ControllerInterfaceBlock.InterfaceState state) {
         if (this.level != null) {
             level.setBlock(getBlockPos(), ModBlocks.CONTROLLER_INTERFACE.get().defaultBlockState().setValue(ControllerInterfaceBlock.STATE, state), 2);
         }
