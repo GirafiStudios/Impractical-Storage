@@ -1,6 +1,6 @@
 package com.girafi.impstorage.block;
 
-import com.girafi.impstorage.block.blockentity.ItemBlockEntity;
+import com.girafi.impstorage.block.blockentity.StorageBlockEntity;
 import com.girafi.impstorage.init.ModBlocks;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.Containers;
@@ -24,9 +24,9 @@ import net.minecraft.world.phys.HitResult;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-public class ItemBlockBlock extends BaseEntityBlock {
+public class StorageBlock extends BaseEntityBlock {
 
-    public ItemBlockBlock() {
+    public StorageBlock() {
         super(Block.Properties.of().strength(-1.0F, 3600000.8F).noLootTable().noOcclusion().isValidSpawn(ModBlocks::never).pushReaction(PushReaction.BLOCK));
     }
 
@@ -39,15 +39,15 @@ public class ItemBlockBlock extends BaseEntityBlock {
     @Override
     @Nullable
     public BlockEntity newBlockEntity(@Nonnull BlockPos pos, @Nonnull BlockState state) {
-        return new ItemBlockEntity(pos, state);
+        return new StorageBlockEntity(pos, state);
     }
 
     @Override
     public void setPlacedBy(Level level, @Nonnull BlockPos pos, @Nonnull BlockState state, @Nullable LivingEntity livingEntity, @Nonnull ItemStack stack) {
         if (!level.isClientSide()) {
             BlockEntity blockEntity = level.getBlockEntity(pos);
-            if (blockEntity instanceof ItemBlockEntity) {
-                ((ItemBlockEntity) blockEntity).updateItemBlock(ItemStack.EMPTY);
+            if (blockEntity instanceof StorageBlockEntity) {
+                ((StorageBlockEntity) blockEntity).updateItemBlock(ItemStack.EMPTY);
             }
         }
     }
@@ -55,8 +55,8 @@ public class ItemBlockBlock extends BaseEntityBlock {
     @Override
     public void neighborChanged(@Nonnull BlockState state, @Nonnull Level level, @Nonnull BlockPos pos, @Nonnull Block block, @Nonnull BlockPos neighBorPos, boolean b) {
         BlockEntity blockEntity = level.getBlockEntity(pos);
-        if (blockEntity instanceof ItemBlockEntity) {
-            ((ItemBlockEntity) blockEntity).updateItemBlock(ItemStack.EMPTY);
+        if (blockEntity instanceof StorageBlockEntity) {
+            ((StorageBlockEntity) blockEntity).updateItemBlock(ItemStack.EMPTY);
         }
     }
 
@@ -64,8 +64,8 @@ public class ItemBlockBlock extends BaseEntityBlock {
     public void onRemove(@Nonnull BlockState state, @Nonnull Level level, @Nonnull BlockPos pos, @Nonnull BlockState newState, boolean isMoving) {
         if (!level.isClientSide()) {
             BlockEntity blockEntity = level.getBlockEntity(pos);
-            if (blockEntity instanceof ItemBlockEntity) {
-                ((ItemBlockEntity) blockEntity).getDrop();
+            if (blockEntity instanceof StorageBlockEntity) {
+                ((StorageBlockEntity) blockEntity).getDrop();
             }
         }
     }
@@ -73,8 +73,8 @@ public class ItemBlockBlock extends BaseEntityBlock {
     @Override
     public ItemStack getCloneItemStack(BlockState state, HitResult target, BlockGetter level, BlockPos pos, Player player) {
         BlockEntity blockEntity = level.getBlockEntity(pos);
-        if (blockEntity instanceof ItemBlockEntity) {
-            return ((ItemBlockEntity) blockEntity).stack;
+        if (blockEntity instanceof StorageBlockEntity) {
+            return ((StorageBlockEntity) blockEntity).stack;
         }
 
         return super.getCloneItemStack(state, target, level, pos, player);
@@ -86,8 +86,8 @@ public class ItemBlockBlock extends BaseEntityBlock {
         if (!level.isClientSide) {
             if (player.isCrouching()) {
                 BlockEntity blockEntity = level.getBlockEntity(pos);
-                if (blockEntity instanceof ItemBlockEntity) {
-                    ItemStack drop = ((ItemBlockEntity) blockEntity).getDrop();
+                if (blockEntity instanceof StorageBlockEntity) {
+                    ItemStack drop = ((StorageBlockEntity) blockEntity).getDrop();
                     if (!drop.isEmpty()) {
                         Containers.dropItemStack(level, pos.getX(), pos.getY(), pos.getZ(), drop);
                     }

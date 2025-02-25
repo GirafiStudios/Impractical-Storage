@@ -8,41 +8,33 @@ import net.minecraft.world.level.block.state.BlockState;
 
 import javax.annotation.Nonnull;
 
-public class ItemBlockEntity extends BlockEntityCore {
+public class StorageBlockEntity extends BlockEntityCore {
     public static boolean DROPS = true;
     public ItemStack stack = ItemStack.EMPTY;
-    private BlockPos controllerPos;
+    private BlockPos controllerPos = BlockPos.ZERO;
 
-    public ItemBlockEntity(BlockPos pos, BlockState state) {
-        super(ModBlockEntities.ITEM_BLOCK.get(), pos, state);
+    public StorageBlockEntity(BlockPos pos, BlockState state) {
+        super(ModBlockEntities.STORAGE.get(), pos, state);
     }
 
     @Override
     public void saveAdditional(@Nonnull CompoundTag compound) {
         super.saveAdditional(compound);
 
-        if (controllerPos != null) {
-            compound.putLong("controller", controllerPos.asLong());
-        }
-
+        compound.putLong("controller", this.controllerPos.asLong());
         CompoundTag tag = new CompoundTag();
-        compound.put("stack", stack.save(tag));
+        compound.put("stack", this.stack.save(tag));
     }
 
     @Override
     public void load(@Nonnull CompoundTag compound) {
         super.load(compound);
 
-        if (compound.contains("controller")) {
-            controllerPos = BlockPos.of(compound.getLong("controller"));
-        } else {
-            controllerPos = null;
-        }
+        this.controllerPos = BlockPos.of(compound.getLong("controller"));
 
-        if (compound.contains("stack")) {
+
+        if (compound.contains("stack", 10)) {
             stack = ItemStack.of(compound.getCompound("stack"));
-        } else {
-            stack = ItemStack.EMPTY;
         }
     }
 
@@ -51,10 +43,10 @@ public class ItemBlockEntity extends BlockEntityCore {
     }
 
     private ControllerBlockEntity getController() {
-        if (controllerPos == null || controllerPos.equals(BlockPos.ZERO) || level == null) {
+        if (controllerPos == BlockPos.ZERO || this.level == null) {
             return null;
         }
-        return (ControllerBlockEntity) level.getBlockEntity(controllerPos);
+        return (ControllerBlockEntity) this.level.getBlockEntity(controllerPos);
     }
 
     public void updateItemBlock(ItemStack force) {
@@ -66,13 +58,12 @@ public class ItemBlockEntity extends BlockEntityCore {
     }
 
     public ItemStack getDrop() {
-        if (!DROPS) return null;
+        if (!DROPS) return ItemStack.EMPTY;
 
         ControllerBlockEntity controller = getController();
         if (controller != null) {
             int slot = controller.getSlotForPosition(getBlockPos());
-            if (slot == -1)
-                return ItemStack.EMPTY;
+            if (slot == -1) return ItemStack.EMPTY;
 
             ItemStack drop = controller.getStackInSlot(slot).copy();
 

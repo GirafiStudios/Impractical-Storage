@@ -63,8 +63,6 @@ public class ControllerBoundsRenderer {
                                 pair[1] = controller.origin.offset(controller.xLength, controller.height, controller.zLength);
 
                                 boxes.put(pair, controller.getBlockPos());
-                            } else {
-                                return;
                             }
                         }
                     }

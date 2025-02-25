@@ -28,10 +28,8 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.common.util.LazyOptional;
-import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.ItemHandlerHelper;
 import net.minecraftforge.items.ItemStackHandler;
-import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -149,6 +147,7 @@ public class ControllerBlockEntity extends BlockEntityCore {
             if (stackInSlot.isEmpty()) return ItemStack.EMPTY;
 
             if (simulate) {
+                System.out.println("Simulate");
                 if (stackInSlot.getCount() < amount) {
                     return stackInSlot.copy();
                 } else {
@@ -160,6 +159,8 @@ public class ControllerBlockEntity extends BlockEntityCore {
                 int m = Math.min(stackInSlot.getCount(), amount);
                 ItemStack old = this.controller.getStackInSlot(slot);
                 ItemStack decr = old.split(m);
+
+                System.out.println("Extra Item else");
 
                 this.controller.setInventorySlotContents(slot, old, true, true, true);
 
@@ -459,7 +460,7 @@ public class ControllerBlockEntity extends BlockEntityCore {
                             BlockPos originAdd = new BlockPos(x, y, z).offset(controller.origin);
                             Block block = state.getBlock();
 
-                            if (block != ModBlocks.CONTROLLER.get() && block != ModBlocks.ITEM_BLOCK.get() && !level.getBlockState(originAdd).isAir()) {
+                            if (block != ModBlocks.CONTROLLER.get() && block != ModBlocks.STORAGE.get() && !level.getBlockState(originAdd).isAir()) {
                                 ItemStack stack = new ItemStack(block);
                                 level.setBlock(originAdd, Blocks.AIR.defaultBlockState(), 2);
 
@@ -558,7 +559,7 @@ public class ControllerBlockEntity extends BlockEntityCore {
                     for (int x = 0; x < xLength; x++) {
                         BlockPos pos = oldOrigin.offset(x, y, z);
                         BlockState state = level.getBlockState(pos);
-                        if (state.getBlock() == ModBlocks.ITEM_BLOCK.get()) {
+                        if (state.getBlock() == ModBlocks.STORAGE.get()) {
                             level.setBlock(pos, Blocks.AIR.defaultBlockState(), 2);
                         }
                     }
@@ -643,7 +644,7 @@ public class ControllerBlockEntity extends BlockEntityCore {
     }
 
     public void onBlockBreak() {
-        ItemBlockEntity.DROPS = false;
+        StorageBlockEntity.DROPS = false;
 
         if (this.level != null) {
             for (int i = 0; i < this.totalSize; i++) {
@@ -656,7 +657,7 @@ public class ControllerBlockEntity extends BlockEntityCore {
                         Containers.dropItemStack(this.level, pos.getX(), pos.getY(), pos.getZ(), stack);
                         this.setBlock(i, ItemStack.EMPTY);
                     } else {
-                        if (blockEntity instanceof ItemBlockEntity) {
+                        if (blockEntity instanceof StorageBlockEntity) {
                             Item item = getStackForPosition(pos).getItem();
                             if (item instanceof BlockItem && !BlockOverrides.shouldTreatAsItem(item)) {
                                 this.level.setBlock(pos, Block.byItem(item).defaultBlockState(), 2);
@@ -684,7 +685,7 @@ public class ControllerBlockEntity extends BlockEntityCore {
             }
         }
 
-        ItemBlockEntity.DROPS = true;
+        StorageBlockEntity.DROPS = true;
     }
 
     public int getSlotForPosition(BlockPos pos) {
@@ -767,6 +768,8 @@ public class ControllerBlockEntity extends BlockEntityCore {
     private void shiftInventory() {
         NonNullList<ItemStack> shifted = NonNullList.withSize(this.totalSize, ItemStack.EMPTY);
 
+        System.out.println("Shift");
+
         int target = 0;
         for (ItemStack stack : this.inventory) {
             if (!stack.isEmpty()) {
@@ -783,7 +786,7 @@ public class ControllerBlockEntity extends BlockEntityCore {
     }
 
     private boolean setBlock(int slot, ItemStack itemStack) {
-        ItemBlockEntity.DROPS = false;
+        StorageBlockEntity.DROPS = false;
 
         if (slot == -1 || this.level == null) return false;
 
@@ -803,7 +806,7 @@ public class ControllerBlockEntity extends BlockEntityCore {
         BlockState state = this.level.getBlockState(pos);
 
         if (itemStack.isEmpty()) {
-            if (state.getBlock() == ModBlocks.ITEM_BLOCK.get()) {
+            if (state.getBlock() == ModBlocks.STORAGE.get()) {
                 if (this.sortingType == SortingType.MESSY) {
                     this.slotToWorldMap[slot] = -1;
                     this.worldToSlotMap[y][x][z] = -1;
@@ -811,20 +814,21 @@ public class ControllerBlockEntity extends BlockEntityCore {
                 this.level.setBlock(pos, Blocks.AIR.defaultBlockState(), 2);
             }
         } else {
-            if (state.getBlock() == ModBlocks.ITEM_BLOCK.get()) {
+            if (state.getBlock() == ModBlocks.STORAGE.get()) {
                 BlockEntity blockEntity = this.level.getBlockEntity(pos);
-                if (blockEntity instanceof ItemBlockEntity)
-                    ((ItemBlockEntity) blockEntity).updateItemBlock(itemStack);
+                if (blockEntity instanceof StorageBlockEntity) {
+                    ((StorageBlockEntity) blockEntity).updateItemBlock(itemStack);
+                }
             } else {
-                this.level.setBlock(pos, ModBlocks.ITEM_BLOCK.get().defaultBlockState(), 2);
+                this.level.setBlock(pos, ModBlocks.STORAGE.get().defaultBlockState(), 2);
                 BlockEntity blockEntity = this.level.getBlockEntity(pos);
-                if (blockEntity instanceof ItemBlockEntity) {
-                    ((ItemBlockEntity) blockEntity).setController(this);
-                    ((ItemBlockEntity) blockEntity).updateItemBlock(itemStack);
+                if (blockEntity instanceof StorageBlockEntity) {
+                    ((StorageBlockEntity) blockEntity).setController(this);
+                    ((StorageBlockEntity) blockEntity).updateItemBlock(itemStack);
                 }
             }
         }
-        ItemBlockEntity.DROPS = true;
+        StorageBlockEntity.DROPS = true;
 
         return true;
     }

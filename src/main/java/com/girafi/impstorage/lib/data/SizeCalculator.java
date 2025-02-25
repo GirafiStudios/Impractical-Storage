@@ -8,7 +8,7 @@ public abstract class SizeCalculator {
 
     private static boolean isBlockOccluded(ControllerBlockEntity tile, int x, int y, int z) {
         if (tile.getLevel() == null) return false;
-        return tile.worldOcclusionMap[y][x][z] || (!tile.getLevel().getBlockState(tile.origin.offset(x, y, z)).isAir() && tile.getLevel().getBlockState(new BlockPos(x, y, z)).getBlock() != ModBlocks.ITEM_BLOCK.get());
+        return tile.worldOcclusionMap[y][x][z] || (!tile.getLevel().getBlockState(tile.origin.offset(x, y, z)).isAir() && tile.getLevel().getBlockState(new BlockPos(x, y, z)).getBlock() != ModBlocks.STORAGE.get());
     }
 
     public static final SizeCalculator DEFAULT = new SizeCalculator() {

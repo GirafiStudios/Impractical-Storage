@@ -3,7 +3,7 @@ package com.girafi.impstorage.init;
 import com.girafi.impstorage.block.blockentity.ControllerBlockEntity;
 import com.girafi.impstorage.block.blockentity.ControllerInterfaceBlockEntity;
 import com.girafi.impstorage.block.blockentity.ConveyorBlockEntity;
-import com.girafi.impstorage.block.blockentity.ItemBlockEntity;
+import com.girafi.impstorage.block.blockentity.StorageBlockEntity;
 import com.girafi.impstorage.lib.ModInfo;
 import com.mojang.datafixers.types.Type;
 import net.minecraft.Util;
@@ -19,7 +19,7 @@ import java.util.function.Supplier;
 
 public class ModBlockEntities {
     public static final DeferredRegister<BlockEntityType<?>> BLOCK_ENTITY_DEFERRED = DeferredRegister.create(ForgeRegistries.BLOCK_ENTITY_TYPES, ModInfo.ID);
-    public static final RegistryObject<BlockEntityType<ItemBlockEntity>> ITEM_BLOCK = register("neptunes_bounty", () -> BlockEntityType.Builder.of(ItemBlockEntity::new, ModBlocks.ITEM_BLOCK.get()));
+    public static final RegistryObject<BlockEntityType<StorageBlockEntity>> STORAGE = register("storage", () -> BlockEntityType.Builder.of(StorageBlockEntity::new, ModBlocks.STORAGE.get()));
     public static final RegistryObject<BlockEntityType<ControllerBlockEntity>> CONTROLLER = register("controller", () -> BlockEntityType.Builder.of(ControllerBlockEntity::new, ModBlocks.CONTROLLER.get()));
     public static final RegistryObject<BlockEntityType<ControllerInterfaceBlockEntity>> CONTROLLER_INTERFACE = register("controller_interface", () -> BlockEntityType.Builder.of(ControllerInterfaceBlockEntity::new, ModBlocks.CONTROLLER_INTERFACE.get()));
     public static final RegistryObject<BlockEntityType<ConveyorBlockEntity>> CONVEYOR = register("conveyor", () -> BlockEntityType.Builder.of(ConveyorBlockEntity::new, ModBlocks.CONVEYOR.get()));
