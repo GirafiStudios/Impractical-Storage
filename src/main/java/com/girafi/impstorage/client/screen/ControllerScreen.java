@@ -6,7 +6,7 @@ import com.girafi.impstorage.lib.ImpracticalConfig;
 import com.girafi.impstorage.lib.ModInfo;
 import com.girafi.impstorage.lib.data.SortingType;
 import com.girafi.impstorage.network.PacketHandler;
-import com.girafi.impstorage.network.packet.SControllerConfig;
+import com.girafi.impstorage.network.packet.ControllerConfigPacket;
 import com.google.common.base.Predicate;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.EditBox;
@@ -266,7 +266,7 @@ public class ControllerScreen extends Screen {
             sortingType = nsortingType;
         }
 
-        SControllerConfig packet = new SControllerConfig(this.controllerBlockEntity.getBlockPos(), dimensions, boundX, boundY, boundZ, offset, offsetX, offsetY, offsetZ, sort, sortingType);
+        ControllerConfigPacket packet = new ControllerConfigPacket(this.controllerBlockEntity.getBlockPos(), dimensions, boundX, boundY, boundZ, offset, offsetX, offsetY, offsetZ, sort, sortingType);
         PacketHandler.CHANNEL.sendToServer(packet);
 
         this.x = nx;

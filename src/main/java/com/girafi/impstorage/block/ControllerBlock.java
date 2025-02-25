@@ -1,10 +1,9 @@
 package com.girafi.impstorage.block;
 
 import com.girafi.impstorage.block.blockentity.ControllerBlockEntity;
-import com.girafi.impstorage.client.screen.ControllerScreen;
+import com.girafi.impstorage.client.ClientHandler;
 import com.girafi.impstorage.init.ModBlockEntities;
 import com.girafi.impstorage.init.ModBlocks;
-import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.InteractionHand;
@@ -74,10 +73,10 @@ public class ControllerBlock extends BaseEntityBlock {
     public InteractionResult use(@Nonnull BlockState state, Level level, @Nonnull BlockPos pos, @Nonnull Player player, @Nonnull InteractionHand hand, @Nonnull BlockHitResult hit) {
         if (level.isClientSide()) {
             BlockEntity blockEntity = level.getBlockEntity(pos);
-            if (blockEntity instanceof ControllerBlockEntity) {
-                Minecraft.getInstance().setScreen(new ControllerScreen((ControllerBlockEntity) blockEntity));
+            if (blockEntity instanceof ControllerBlockEntity controller) {
+                ClientHandler.openControllerScreen(controller);
+                return InteractionResult.SUCCESS;
             }
-            return InteractionResult.SUCCESS;
         }
         return InteractionResult.CONSUME;
     }

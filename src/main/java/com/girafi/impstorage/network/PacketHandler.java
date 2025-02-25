@@ -1,7 +1,7 @@
 package com.girafi.impstorage.network;
 
 import com.girafi.impstorage.lib.ModInfo;
-import com.girafi.impstorage.network.packet.SControllerConfig;
+import com.girafi.impstorage.network.packet.ControllerConfigPacket;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.network.NetworkDirection;
 import net.minecraftforge.network.NetworkRegistry;
@@ -17,6 +17,6 @@ public class PacketHandler {
             .simpleChannel();
 
     public static void initialize() {
-        CHANNEL.messageBuilder(SControllerConfig.class, 0, NetworkDirection.PLAY_TO_SERVER).encoder(SControllerConfig::encode).decoder(SControllerConfig::decode).consumerNetworkThread(SControllerConfig.Handler::handle).add();
+        CHANNEL.messageBuilder(ControllerConfigPacket.class, 0, NetworkDirection.PLAY_TO_SERVER).encoder(ControllerConfigPacket::encode).decoder(ControllerConfigPacket::decode).consumerNetworkThread(ControllerConfigPacket::handle).add();
     }
 }

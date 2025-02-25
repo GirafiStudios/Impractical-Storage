@@ -45,7 +45,7 @@ public class ItemizerBlock extends DirectionalBlock {
 
     private void itemizeBlocks(Level level, BlockPos pos, BlockState state) {
         if (!level.isClientSide()) {
-            pos = pos.relative(state.getValue(FACING)); //TODO Test
+            pos = pos.relative(state.getValue(FACING));
             BlockState s = level.getBlockState(pos);
             if (!state.isAir()) {
                 ItemStack stack = new ItemStack(s.getBlock());

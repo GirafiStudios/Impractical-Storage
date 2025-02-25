@@ -2,6 +2,7 @@ package com.girafi.impstorage.block;
 
 import com.girafi.impstorage.init.ModBlocks;
 import com.girafi.impstorage.lib.ModInfo;
+import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.item.ItemStack;
@@ -14,6 +15,9 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.level.material.PushReaction;
+import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.Shapes;
+import net.minecraft.world.phys.shapes.VoxelShape;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -28,7 +32,15 @@ public class PhantomBlock extends Block {
         this.registerDefaultState(this.getStateDefinition().any().setValue(TYPE, EnumType.BLOCK));
     }
 
-    //TODO Hide bounding-box unless holding item
+    @Override
+    @Nonnull
+    public VoxelShape getShape(BlockState state, @Nonnull BlockGetter blockGetter, @Nonnull BlockPos pos, CollisionContext context) {
+        if (context.isHoldingItem(state.getBlock().asItem())) {
+            return super.getShape(state, blockGetter, pos, context);
+        } else {
+            return Shapes.empty();
+        }
+    }
 
     @Override
     @Nonnull
@@ -39,7 +51,7 @@ public class PhantomBlock extends Block {
     @Override
     public void appendHoverText(@Nonnull ItemStack stack, @Nullable BlockGetter blockGetter, @Nonnull List<Component> tooltip, @Nonnull TooltipFlag tooltipFlag) {
         super.appendHoverText(stack, blockGetter, tooltip, tooltipFlag);
-        tooltip.add(Component.translatable(ModInfo.ID + ".tooltip.phantom.type." + TYPE.getName())); //TODO Test
+        //tooltip.add(Component.translatable(ModInfo.ID + ".tooltip.phantom.type." + this.defaultBlockState().getValue(TYPE).getSerializedName())); //TODO. Low priority, COLUMN is not even being set anywhere atm.
     }
 
     @Override
