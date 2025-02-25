@@ -18,7 +18,7 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.client.event.RenderLevelStageEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 
-import java.util.ArrayDeque;
+import java.util.HashMap;
 
 public class ControllerBoundsRenderer {
     private static final int CELL_BORDER = FastColor.ARGB32.color(255, 0, 155, 155);
@@ -29,21 +29,19 @@ public class ControllerBoundsRenderer {
     public static void renderBorder(RenderLevelStageEvent event) {
         if (event.getStage() == RenderLevelStageEvent.Stage.AFTER_PARTICLES) {
             Minecraft mc = Minecraft.getInstance();
+            if (mc.player == null) return;
             Level level = mc.level;
 
             if (level != null) {
                 Camera camera = mc.getBlockEntityRenderDispatcher().camera;
-                BlockPos checkPos = BlockPos.containing(mc.getCameraEntity().position());
 
                 PoseStack poseStack = event.getPoseStack();
                 MultiBufferSource buffer = mc.renderBuffers().bufferSource();
                 VertexConsumer vertexConsumer = buffer.getBuffer(RenderType.lines());
 
-                poseStack.pushPose();
-
                 //Check nearby chunks, to not only render in the same chunk the Controller is in
                 LevelChunk[] chunks = new LevelChunk[9];
-                chunks[4] = level.getChunkAt(new BlockPos(checkPos.getX(), 1, checkPos.getZ()));
+                chunks[4] = level.getChunkAt(new BlockPos(camera.getBlockPosition().getX(), 1, camera.getBlockPosition().getZ()));
                 int cX = chunks[4].getPos().x;
                 int cZ = chunks[4].getPos().z;
 
@@ -58,17 +56,16 @@ public class ControllerBoundsRenderer {
                 chunks[7] = level.getChunk(cX, cZ + 1);
                 chunks[8] = level.getChunk(cX + 1, cZ + 1);
 
-                ArrayDeque<BlockPos[]> boxes = new ArrayDeque<>();
+                HashMap<BlockPos[], BlockPos> boxes = new HashMap<>();
                 for (int c = 0; c < 9; ++c) {
                     for (BlockEntity obj : chunks[c].getBlockEntities().values()) {
                         if (obj instanceof ControllerBlockEntity controller) {
                             if (controller.isReady() && controller.showBounds) {
-                                BlockPos[] pair = new BlockPos[3];
+                                BlockPos[] pair = new BlockPos[2];
                                 pair[0] = controller.origin;
                                 pair[1] = controller.origin.offset(controller.xLength, controller.height, controller.zLength);
-                                pair[2] = controller.getBlockPos();
 
-                                boxes.add(pair);
+                                boxes.put(pair, controller.getBlockPos());
                             } else {
                                 return;
                             }
@@ -76,21 +73,19 @@ public class ControllerBoundsRenderer {
                     }
                 }
 
-                BlockPos[] renderPair;
-                while (!boxes.isEmpty()) {
-                    renderPair = boxes.pop();
+                if (!boxes.isEmpty()) {
+                    boxes.forEach((renderPair, controllerPos) -> {
+                        poseStack.pushPose();
+                        BlockPos origin = renderPair[0];
+                        BlockPos originOffset = renderPair[1];
 
-                    BlockPos origin = renderPair[0];
-                    BlockPos originOffset = renderPair[1];
-                    BlockPos controllerPos = renderPair[2];
+                        poseStack.translate(-controllerPos.getX(), -controllerPos.getY(), -controllerPos.getZ());
+                        poseStack.translate(controllerPos.getX() - camera.getPosition().x, controllerPos.getY() - camera.getPosition().y, controllerPos.getZ() - camera.getPosition().z);
 
-                    poseStack.translate(-controllerPos.getX(), -controllerPos.getY(), -controllerPos.getZ());
-                    poseStack.translate(controllerPos.getX() - camera.getPosition().x, controllerPos.getY() - camera.getPosition().y, controllerPos.getZ() - camera.getPosition().z);
-
-                    LevelRenderer.renderLineBox(poseStack, vertexConsumer, origin.getX(), origin.getY(), origin.getZ(), originOffset.getX(), originOffset.getY(), originOffset.getZ(), 1, 1, 1, 1);
+                        LevelRenderer.renderLineBox(poseStack, vertexConsumer, origin.getX(), origin.getY(), origin.getZ(), originOffset.getX(), originOffset.getY(), originOffset.getZ(), 1, 1, 1, 1);
+                        poseStack.popPose();
+                    });
                 }
-
-                poseStack.popPose();
             }
         }
     }
