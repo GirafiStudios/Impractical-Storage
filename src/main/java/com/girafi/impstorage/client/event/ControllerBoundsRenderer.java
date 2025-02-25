@@ -1,27 +1,22 @@
 package com.girafi.impstorage.client.event;
 
 import com.girafi.impstorage.block.blockentity.ControllerBlockEntity;
-import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import com.mojang.math.Axis;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.FastColor;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.client.event.RenderLevelStageEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
-import org.joml.Matrix3f;
-import org.joml.Matrix4f;
 
 import java.util.ArrayDeque;
 
@@ -32,23 +27,40 @@ public class ControllerBoundsRenderer {
     @OnlyIn(Dist.CLIENT)
     @SubscribeEvent
     public static void renderBorder(RenderLevelStageEvent event) {
-        if (event.getStage() == RenderLevelStageEvent.Stage.AFTER_LEVEL) { //TODO Check if this works
+        if (event.getStage() == RenderLevelStageEvent.Stage.AFTER_PARTICLES) {
             Minecraft mc = Minecraft.getInstance();
             Level level = mc.level;
 
-
             if (level != null) {
                 Camera camera = mc.getBlockEntityRenderDispatcher().camera;
+                BlockPos checkPos = BlockPos.containing(mc.getCameraEntity().position());
 
                 PoseStack poseStack = event.getPoseStack();
                 MultiBufferSource buffer = mc.renderBuffers().bufferSource();
-                VertexConsumer vertexConsumer = buffer.getBuffer(RenderType.lineStrip());
+                VertexConsumer vertexConsumer = buffer.getBuffer(RenderType.lines());
 
                 poseStack.pushPose();
 
+                //Check nearby chunks, to not only render in the same chunk the Controller is in
+                LevelChunk[] chunks = new LevelChunk[9];
+                chunks[4] = level.getChunkAt(new BlockPos(checkPos.getX(), 1, checkPos.getZ()));
+                int cX = chunks[4].getPos().x;
+                int cZ = chunks[4].getPos().z;
+
+                chunks[0] = level.getChunk(cX - 1, cZ - 1);
+                chunks[1] = level.getChunk(cX, cZ - 1);
+                chunks[2] = level.getChunk(cX + 1, cZ - 1);
+
+                chunks[3] = level.getChunk(cX - 1, cZ);
+                chunks[5] = level.getChunk(cX + 1, cZ);
+
+                chunks[6] = level.getChunk(cX - 1, cZ + 1);
+                chunks[7] = level.getChunk(cX, cZ + 1);
+                chunks[8] = level.getChunk(cX + 1, cZ + 1);
+
                 ArrayDeque<BlockPos[]> boxes = new ArrayDeque<>();
                 for (int c = 0; c < 9; ++c) {
-                    for (BlockEntity obj : level.getChunkAt(camera.getBlockPosition()).getBlockEntities().values()) {
+                    for (BlockEntity obj : chunks[c].getBlockEntities().values()) {
                         if (obj instanceof ControllerBlockEntity controller) {
                             if (controller.isReady() && controller.showBounds) {
                                 BlockPos[] pair = new BlockPos[3];
@@ -72,54 +84,14 @@ public class ControllerBoundsRenderer {
                     BlockPos originOffset = renderPair[1];
                     BlockPos controllerPos = renderPair[2];
 
-
-                    poseStack.translate(-controllerPos.getX(), -controllerPos.getY(), -controllerPos.getZ()); //TODO Fix translation
+                    poseStack.translate(-controllerPos.getX(), -controllerPos.getY(), -controllerPos.getZ());
+                    poseStack.translate(controllerPos.getX() - camera.getPosition().x, controllerPos.getY() - camera.getPosition().y, controllerPos.getZ() - camera.getPosition().z);
 
                     LevelRenderer.renderLineBox(poseStack, vertexConsumer, origin.getX(), origin.getY(), origin.getZ(), originOffset.getX(), originOffset.getY(), originOffset.getZ(), 1, 1, 1, 1);
                 }
 
-                poseStack.translate(0, 0, 0);
-
                 poseStack.popPose();
             }
         }
-    }
-
-    private static void renderPing(double px, double py, double pz, PoseStack poseStack, Camera camera) {
-        Minecraft mc = Minecraft.getInstance();
-        poseStack.pushPose();
-        poseStack.translate(px, py, pz);
-
-        PoseStack.Pose matrixEntry = poseStack.last();
-        Matrix4f matrix4f = matrixEntry.pose();
-        MultiBufferSource.BufferSource buffer = mc.renderBuffers().bufferSource();
-        VertexConsumer vertexBuilder = buffer.getBuffer(RenderType.debugLineStrip(1.0F));
-        RenderSystem.setShader(GameRenderer::getPositionTexColorShader);
-
-        System.out.println("Test");
-
-        float min = -0.25F - (0.25F * (float) 20 / 20F);
-        float max = 0.25F + (0.25F * (float) 20 / 20F);
-
-        int x = 32 * 1;
-        int y = 0;
-        float f = (float) (0.009999999776482582D / (double) 256);
-        float f1 = (float) (0.009999999776482582D / (double) 256);
-        float minU = (float) x / (float) ((double) 256) + f;
-        float maxU = (float) (x + 32) / (float) ((double) 256) - f;
-        float minV = (float) y / (float) 256 + f1;
-        float maxV = (float) (y + 32) / (float) 256 - f1;
-
-        // Block Overlay Background
-        renderPosTexColorNoZ(vertexBuilder, matrix4f, min, max, minU, maxV, 150, 150, 150, 255);
-        renderPosTexColorNoZ(vertexBuilder, matrix4f, max, max, maxU, maxV, 150, 150, 150, 255);
-        renderPosTexColorNoZ(vertexBuilder, matrix4f, max, min, maxU, minV, 150, 150, 150, 255);
-        renderPosTexColorNoZ(vertexBuilder, matrix4f, min, min, minU, minV, 150, 150, 150, 255);
-
-        poseStack.popPose();
-    }
-
-    public static void renderPosTexColorNoZ(VertexConsumer builder, Matrix4f matrix4f, float x, float y, float u, float v, float r, float g, float b, float a) {
-        builder.vertex(matrix4f, x, y, 0).uv(u, v).color(r, g, b, a).endVertex();
     }
 }
