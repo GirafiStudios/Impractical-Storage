@@ -104,7 +104,6 @@ public class TileController extends TileCore implements ITickable {
                         controller.setInventorySlotContents(slot, copy, false, true, true);
                         controller.markDirty();
                     }
-
                     return ItemStack.EMPTY;
                 } else {
                     // copy the stack to not modify the original one
@@ -394,10 +393,6 @@ public class TileController extends TileCore implements ITickable {
                 updateRawBounds(facing, rawX, rawY, rawZ);
             }
         }
-    }
-
-    public void setShowBounds(boolean showBounds) {
-        this.showBounds = showBounds;
     }
 
     public void setSortingType(SortingType sortingType) {
