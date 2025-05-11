@@ -1,4 +1,4 @@
-package com.girafi.impstorage.item;
+package com.girafi.impstorage.item.inventory;
 
 import com.girafi.impstorage.block.blockentity.ControllerBlockEntity;
 import net.minecraft.world.item.BlockItem;

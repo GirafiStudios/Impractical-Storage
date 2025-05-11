@@ -6,7 +6,7 @@ import com.girafi.impstorage.block.PhantomBlock;
 import com.girafi.impstorage.core.BlockOverrides;
 import com.girafi.impstorage.init.ModBlockEntities;
 import com.girafi.impstorage.init.ModBlocks;
-import com.girafi.impstorage.item.ControllerItemHandler;
+import com.girafi.impstorage.item.inventory.ControllerItemHandler;
 import com.girafi.impstorage.lib.ImpracticalConfig;
 import com.girafi.impstorage.lib.data.SortingType;
 import net.minecraft.core.BlockPos;
@@ -29,8 +29,6 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.common.util.LazyOptional;
-import net.minecraftforge.items.ItemHandlerHelper;
-import net.minecraftforge.items.ItemStackHandler;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
